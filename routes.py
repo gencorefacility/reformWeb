@@ -1,6 +1,5 @@
 import os
 import wget
-import reform
 from flask import Flask, render_template, request, flash, redirect, url_for
 from werkzeug import secure_filename
 app = Flask(__name__)
@@ -8,7 +7,6 @@ app = Flask(__name__)
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = set(['fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar.gz', 'tar', 'gz'])
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'super secret key'
 
 @app.route('/')
@@ -24,16 +22,16 @@ def grab():
       
       # Upload Files
       upstream_fasta = request.files['upstream_fasta']
-      upstream_fasta.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(upstream_fasta.filename)))
+      upstream_fasta.save(os.path.join(UPLOAD_FOLDER, secure_filename(upstream_fasta.filename)))
 
       downstream_fasta = request.files['downstream_fasta']
-      downstream_fasta.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(downstream_fasta.filename)))
+      downstream_fasta.save(os.path.join(UPLOAD_FOLDER, secure_filename(downstream_fasta.filename)))
 
       in_fasta = request.files['in_fasta']
-      in_fasta.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(in_fasta.filename)))
+      in_fasta.save(os.path.join(UPLOAD_FOLDER, secure_filename(in_fasta.filename)))
 
       in_gff = request.files['in_gff']
-      in_gff.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(in_gff.filename)))
+      in_gff.save(os.path.join(UPLOAD_FOLDER, secure_filename(in_gff.filename)))
 
       # Download from links
       ref_fasta_url = request.form['ref_fasta']
@@ -45,8 +43,8 @@ def grab():
       command =  'python3 reform.py --chrom {} --position {} --in_fasta {} --in_gff {} --ref_fasta {} --ref_gff {}'.format(
            request.form['chrom'],
            request.form['position'],
-           os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(in_fasta.filename)),
-           os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(in_gff.filename)),
+           os.path.join(UPLOAD_FOLDER, secure_filename(in_fasta.filename)),
+           os.path.join(UPLOAD_FOLDER, secure_filename(in_gff.filename)),
            ref_fasta_download,
            ref_gff_download ) 
       print( command )
