@@ -1,0 +1,17 @@
+<html>
+   <body>
+      <form action = "http://localhost:5000/result" method = "POST" 
+         enctype = "multipart/form-data">
+	 <p>e-mail <input type = "text" name = "email" /></p>
+         <p>chrom <input type = "text" name = "chrom" /></p>
+         <p>position <input type = "text" name = "position" /></p>
+         <p>upstream_fasta <input type = "file" name = "upstream_fasta" /></p>
+         <p>downstream_fasta <input type = "file" name = "downstream_fasta" /></p>
+         <p>in_fasta <input type = "file" name = "in_fasta" /></p>
+         <p>in_gff <input type = "file" name = "in_gff" /></p>
+         <p>ref_fasta <input type = "text" name = "ref_fasta" /></p>
+	 <p>ref_gff <input type = "text" name = "ref_gff" /></p>
+         <input type = "submit"/>
+      </form>
+   </body>
+</html>
