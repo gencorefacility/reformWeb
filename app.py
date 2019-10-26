@@ -31,7 +31,7 @@ def submit():
         # User Submits Job #
         # (1) Create unique ID for each submission
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
-        targetDir = os.path.join(UPLOAD_FOLDER, timestamp)
+        target_dir = os.path.join(UPLOAD_FOLDER, timestamp)
 
         # (2) Upload files from user device to server
         # Verify all files are present before uploading
@@ -42,15 +42,15 @@ def submit():
         # Upload Files to UPLOAD_DIR/timestamp/
         if verified:
             for files in UPLOAD_FILES:
-                upload(targetDir, files)
+                upload(target_dir, files)
 
         # (3) Download files from user provided URLs to server
         for files in DOWNLOAD_FILES:
-            download(targetDir, files)
+            download(target_dir, files)
 
         flash('Job Submitted')
         return redirect(url_for('submit'))
-    return render_template('index.html', form=form)
+    return render_template('form.html', form=form)
 
 
 def allowed_file(filename):
@@ -70,20 +70,19 @@ def verify_uploads(file):
         return False
 
 
-def upload(targetDir, file):
+def upload(target_dir, file):
     fileObj = request.files[file]
     # make the directory based on timestamp
-    os.system('mkdir ' + targetDir)
+    os.system('mkdir ' + target_dir)
     # save the file
-    fileObj.save(os.path.join(targetDir,
+    fileObj.save(os.path.join(target_dir,
                               secure_filename(fileObj.filename)))
 
 
-def download(targetDir, file):
-    file = request.form[file]
+def download(target_dir, file):
+    URL = request.form[file]
     if file:
-        print("targetDir = " + targetDir)
-        wget.download(file, targetDir)
+        wget.download(URL, target_dir)
 
 
 def runReform():

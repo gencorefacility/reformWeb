@@ -1,13 +1,42 @@
 {% macro render_field(field) %}
-<dt>{{ field.label }} {{ field(**kwargs)|safe }}
+<style>
+
+dt {
+}
+
+dd {
+  font-family: monospace;
+}
+
+th {
+  text-align: left;
+}
+
+input[type=text] {
+  width: 75%;
+}
+
+table, th, td{
+   border-collapse: collapse;
+   border-style: dashed;
+}
+
+
+</style>
+
+
+<dt>
+    <b>{{ field.label }}</b> <br>
+    <small>{{ field.description }}</small>
+    <br>{{ field(**kwargs)|safe }}
 <dd>
-    {{ field.description }}
     {% if field.errors %}
-        {% for error in field.errors %}
-            {{ error }}
-        {% endfor %}
+    {% for error in field.errors %}
+    {{ error }}
+    {% endfor %}
     {% endif %}
 </dd>
 </dt>
+
 <p></p>
 {% endmacro %}

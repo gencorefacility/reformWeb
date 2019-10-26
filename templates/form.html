@@ -1,0 +1,44 @@
+{% extends "index.html" %}
+{% block content %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul class=flashes>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+{% from "_formhelpers.html" import render_field %}
+<form method="POST" enctype="multipart/form-data">
+    <dl>
+        {{ render_field(form.email) }}
+        {{ render_field(form.chrom) }}
+        {{ render_field(form.ref_fasta) }}
+        {{ render_field(form.ref_gff) }}
+        {{ render_field(form.in_fasta) }}
+        {{ render_field(form.in_gff) }}
+        <table border="1px black" cellpadding="5">
+            <tr>
+                <th rowspan="2" width="200px">
+                    NOTE: Either position, or upstream AND downstream sequence must be provided.
+                </th>
+                <th><p>
+                    {{ render_field(form.position) }}
+                </p>
+                </th>
+            </tr>
+            <tr>
+                <th><p>
+
+                    {{ render_field(form.upstream_fasta) }}
+                    {{ render_field(form.downstream_fasta) }}
+                </p>
+                </th>
+            </tr>
+        </table>
+    </dl>
+    <p><input type=submit value=Submit>
+</form>
+{% endblock %}
