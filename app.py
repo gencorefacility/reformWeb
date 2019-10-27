@@ -81,7 +81,7 @@ def upload(target_dir, file):
 
 def download(target_dir, file):
     URL = request.form[file]
-    if file:
+    if URL:
         wget.download(URL, target_dir)
 
 
