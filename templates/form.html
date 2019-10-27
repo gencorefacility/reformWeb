@@ -21,8 +21,11 @@
         {{ render_field(form.in_gff) }}
         <table border="1px black" cellpadding="5">
             <tr>
-                <th rowspan="2" width="200px">
-                    NOTE: Either position, or upstream AND downstream sequence must be provided.
+                <th rowspan="2" width="180px">
+                    NOTE: <p>
+                    <span style="font-weight:normal">
+                        Either position, or upstream AND downstream sequence must be provided.
+                    </span>
                 </th>
                 <th><p>
                     {{ render_field(form.position) }}
@@ -39,6 +42,6 @@
             </tr>
         </table>
     </dl>
-    <p><input type=submit value=Submit>
+    <p><input type=submit value=SUBMIT>
 </form>
 {% endblock %}
