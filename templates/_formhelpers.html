@@ -1,9 +1,6 @@
 {% macro render_field(field) %}
 <style>
 
-dt {
-}
-
 dd {
   font-family: monospace;
 }
@@ -27,7 +24,9 @@ table, th, td{
 
 <dt>
     <b>{{ field.label }}</b> <br>
+    <span style="font-weight:normal">
     <small>{{ field.description }}</small>
+    </span>
     <br>{{ field(**kwargs)|safe }}
 <dd>
     {% if field.errors %}
