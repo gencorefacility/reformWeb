@@ -23,10 +23,13 @@ class SubmitJob(Form):
     # OR
     upstream_fasta = FileField('upstream_fasta',
                                description="FASTA file with upstream sequence.",
-                               validators=[NotRequiredIf("position", message="error")])
+                               validators=[Optional()])
+    # validators=[NotRequiredIf("position", message="error")])
+
     downstream_fasta = FileField('downstream_fasta',
                                  description="FASTA file with downstream sequence.",
-                                 validators=[NotRequiredIf("position", message="error")])
+                                 validators=[Optional()])
+    # validators=[NotRequiredIf("position", message="error")])
 
     # Uploads
     in_fasta = FileField('in_fasta',
