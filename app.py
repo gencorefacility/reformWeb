@@ -19,7 +19,7 @@ if os.name == 'nt':  # If Windows
 else:
     UPLOAD_FOLDER = './uploads'
 
-UPLOAD_FILES = ['upstream_fasta', 'downstream_fasta', 'in_fasta', 'in_gff']
+UPLOAD_FILES = ['in_fasta', 'in_gff']
 DOWNLOAD_FILES = ['ref_fasta', 'ref_gff']
 ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
 
@@ -38,17 +38,20 @@ def submit():
         for files in UPLOAD_FILES:
             verified = verify_uploads(files)
             if not verified:
-                break
+                return redirect(url_for('submit'))
         # Upload Files to UPLOAD_DIR/timestamp/
         if verified:
             for files in UPLOAD_FILES:
                 upload(target_dir, files)
 
         # (3) Download files from user provided URLs to server
-        for files in DOWNLOAD_FILES:
-            download(target_dir, files)
+        ref_fasta = download(target_dir, 'ref_fasta')
+        ref_gff = download(target_dir, 'ref_gff')
 
-        flash('Job Submitted')
+        # (4) Run the reform.py
+        runReform(target_dir, ref_fasta, ref_gff, timestamp)
+
+        flash('Job ' + timestamp + ' submitted')
         return redirect(url_for('submit'))
     return render_template('form.html', form=form)
 
@@ -82,17 +85,20 @@ def upload(target_dir, file):
 def download(target_dir, file):
     URL = request.form[file]
     if URL:
-        wget.download(URL, target_dir)
+        return wget.download(URL, target_dir)
 
 
-def runReform():
-    command = 'python reform.py --chrom {} --position {} --in_fasta {} --in_gff {} --ref_fasta {} --ref_gff {}'.format(
+def runReform(target_dir, ref_fasta, ref_gff, timestamp):
+    os.system("mkdir results/" + timestamp)
+    command = 'python reform.py --chrom {} --position {} --in_fasta {} --in_gff {} --ref_fasta {} --ref_gff {} --output_dir {}'.format(
         request.form['chrom'],
         request.form['position'],
-        os.path.join(UPLOAD_FOLDER, secure_filename(in_fasta.filename)),
-        os.path.join(UPLOAD_FOLDER, secure_filename(in_gff.filename)),
-        ref_fasta_download,
-        ref_gff_download)
+        os.path.join(target_dir, secure_filename(request.files['in_fasta'].filename)),
+        os.path.join(target_dir, secure_filename(request.files['in_gff'].filename)),
+        ref_fasta,
+        ref_gff,
+        "./results/" + timestamp + "/"
+    )
     print(command)
     os.system(command)
 
