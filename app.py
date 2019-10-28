@@ -60,12 +60,16 @@ def submit(status=None):
             with sqlite3.connect("database.db") as con:
                 cur = con.cursor()
                 cur.execute(
-                    'INSERT INTO submissions (timestamp, email, status, chrom, position, ref_fasta, ref_gff, '
-                    'in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    'INSERT INTO submissions (timestamp, email, status, chrom, upstream_fasta, downstream_fasta, '
+                    'position, ref_fasta, ref_gff, in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     (timestamp,
                      request.form['email'],
                      status,
                      request.form['chrom'],
+                     request.files[
+                         'upstream_fasta'].filename,
+                     request.files[
+                         'downstream_fasta'].filename,
                      request.form['position'],
                      request.form['ref_fasta'],
                      request.form['ref_gff'],
@@ -119,24 +123,38 @@ def download(target_dir, file):
 
 def runReform(target_dir, ref_fasta, ref_gff, timestamp):
     os.system("mkdir results/" + timestamp)
-    command = 'python reform.py --chrom {} --position {} --in_fasta {} --in_gff {} --ref_fasta {} --ref_gff {} --output_dir {}'.format(
-        request.form['chrom'],
-        request.form['position'],
-        os.path.join(target_dir, secure_filename(request.files['in_fasta'].filename)),
-        os.path.join(target_dir, secure_filename(request.files['in_gff'].filename)),
-        ref_fasta,
-        ref_gff,
-        "./results/" + timestamp + "/"
-    )
-    print(command)
+    if request.form['position']:
+        command = 'python reform.py --chrom {} --position {} --in_fasta {} --in_gff {} --ref_fasta {} --ref_gff {} ' \
+                  '--output_dir {}'.format(
+            request.form['chrom'],
+            request.form['position'],
+            os.path.join(target_dir, secure_filename(request.files['in_fasta'].filename)),
+            os.path.join(target_dir, secure_filename(request.files['in_gff'].filename)),
+            ref_fasta,
+            ref_gff,
+            "./results/" + timestamp + "/"
+        )
+    else:
+        command = 'python reform.py --chrom {} --upstream_fasta {} --downstream_fasta {} --in_fasta {} --in_gff {} ' \
+                  '--ref_fasta {} --ref_gff {} --output_dir {}'.format(
+            request.form['chrom'],
+            os.path.join(target_dir, secure_filename(request.files['upstream_fasta'].filename)),
+            os.path.join(target_dir, secure_filename(request.files['downstream_fasta'].filename)),
+            os.path.join(target_dir, secure_filename(request.files['in_fasta'].filename)),
+            os.path.join(target_dir, secure_filename(request.files['in_gff'].filename)),
+            ref_fasta,
+            ref_gff,
+            "./results/" + timestamp + "/"
+        )
+    flash(command)
     os.system(command)
 
 
 def create_db():
     conn = sqlite3.connect('database.db')
     conn.execute(
-        'CREATE TABLE submissions (timestamp TEXT, email TEXT, status TEXT, chrom TEXT, position TEXT, ref_fasta TEXT, '
-        'ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
+        'CREATE TABLE submissions (timestamp TEXT, email TEXT, status TEXT, chrom TEXT, upstream_fasta TEXT, '
+        'downstream_fasta TEXT, position TEXT, ref_fasta TEXT, ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
     conn.close()
 
 
