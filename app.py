@@ -7,6 +7,7 @@ from werkzeug.utils import redirect
 from werkzeug.utils import secure_filename
 
 from forms import SubmitJob
+import sqlite3
 
 app = Flask(__name__)
 # TODO: Move this secret_key out
@@ -25,7 +26,7 @@ ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
 
 
 @app.route('/', methods=['GET', 'POST'])
-def submit():
+def submit(status=None):
     form = SubmitJob(request.form)
     if request.method == 'POST' and form.validate():
         # User Submits Job #
@@ -50,6 +51,34 @@ def submit():
 
         # (4) Run the reform.py
         runReform(target_dir, ref_fasta, ref_gff, timestamp)
+
+        # (5) Add to Database
+        if not os.path.isfile('database.db'):
+            create_db()
+
+        try:
+            with sqlite3.connect("database.db") as con:
+                cur = con.cursor()
+                cur.execute(
+                    'INSERT INTO submissions (timestamp, email, status, chrom, position, ref_fasta, ref_gff, '
+                    'in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    (timestamp,
+                     request.form['email'],
+                     status,
+                     request.form['chrom'],
+                     request.form['position'],
+                     request.form['ref_fasta'],
+                     request.form['ref_gff'],
+                     request.files[
+                         'in_fasta'].filename,
+                     request.files[
+                         'in_gff'].filename))
+
+                con.commit()
+                flash("Record successfully added")
+        except:
+            con.rollback()
+            flash("error in insert operation")
 
         flash('Job ' + timestamp + ' submitted')
         return redirect(url_for('submit'))
@@ -101,6 +130,14 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp):
     )
     print(command)
     os.system(command)
+
+
+def create_db():
+    conn = sqlite3.connect('database.db')
+    conn.execute(
+        'CREATE TABLE submissions (timestamp TEXT, email TEXT, status TEXT, chrom TEXT, position TEXT, ref_fasta TEXT, '
+        'ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
+    conn.close()
 
 
 if __name__ == '__main__':
