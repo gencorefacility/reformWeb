@@ -32,7 +32,7 @@ class NotRequiredIf(FileRequired):
         - http://stackoverflow.com/questions/8463209/how-to-make-a-field-conditionally-optional-in-wtforms
 
     """
-    field_flags = ('requiredif',)
+    field_flags = ('notrequiredif',)
 
     def __init__(self, other_field_name, message=None, *args, **kwargs):
         self.other_field_name = other_field_name
@@ -42,5 +42,5 @@ class NotRequiredIf(FileRequired):
         other_field = form[self.other_field_name]
         if other_field is None:
             raise Exception('no field named "%s" in form' % self.other_field_name)
-        if bool(not other_field.data):
+        if not bool(other_field.data):
             super(NotRequiredIf, self).__call__(form, field)

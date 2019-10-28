@@ -26,66 +26,97 @@ ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
 
 
 @app.route('/', methods=['GET', 'POST'])
-def submit(status=None):
+def submit():
     form = SubmitJob(request.form)
     if request.method == 'POST' and form.validate():
-        # User Submits Job #
-        # (1) Create unique ID for each submission
-        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
-        target_dir = os.path.join(UPLOAD_FOLDER, timestamp)
+        if (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and request.form[
+            'position']:
+            flash("Error: You must provide either the position, or the upstream and downstream sequences.")
+            return redirect(url_for('submit'))
+        if request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename:
+            flash("Error: Must enter both upstream and downstream")
+            return redirect(url_for('submit'))
+        if not (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and not \
+        request.form['position']:
+            flash("Error: You must provide either the position, or the upstream and downstream sequences.")
+            return redirect(url_for('submit'))
+        else:
+            # User Submits Job #
+            # (1) Create unique ID for each submission
+            timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+            target_dir = os.path.join(UPLOAD_FOLDER, timestamp)
 
-        # (2) Upload files from user device to server
-        # Verify all files are present before uploading
-        for files in UPLOAD_FILES:
-            verified = verify_uploads(files)
-            if not verified:
-                return redirect(url_for('submit'))
-        # Upload Files to UPLOAD_DIR/timestamp/
-        if verified:
+            # (2) Log to Database
+            status = "submitted"
+            if not os.path.isfile('database.db'):
+                create_db()
+
+            try:
+                with sqlite3.connect("database.db") as con:
+                    cur = con.cursor()
+                    cur.execute(
+                        'INSERT INTO submissions (timestamp, email, status, chrom, upstream_fasta, downstream_fasta, '
+                        'position, ref_fasta, ref_gff, in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        (timestamp,
+                         request.form['email'],
+                         status,
+                         request.form['chrom'],
+                         request.files[
+                             'upstream_fasta'].filename,
+                         request.files[
+                             'downstream_fasta'].filename,
+                         request.form['position'],
+                         request.form['ref_fasta'],
+                         request.form['ref_gff'],
+                         request.files[
+                             'in_fasta'].filename,
+                         request.files[
+                             'in_gff'].filename))
+
+                    con.commit()
+                    flash("Record successfully added")
+            except:
+                con.rollback()
+                flash("error in insert operation")
+
+            # (3) Upload files from user device to server
+            # Verify all files are present before uploading
             for files in UPLOAD_FILES:
-                upload(target_dir, files)
+                verified = verify_uploads(files)
+                if not verified:
+                    return redirect(url_for('submit'))
 
-        # (3) Download files from user provided URLs to server
-        ref_fasta = download(target_dir, 'ref_fasta')
-        ref_gff = download(target_dir, 'ref_gff')
+            # Upload Files to UPLOAD_DIR/timestamp/
+            if verified:
+                for files in UPLOAD_FILES:
+                    upload(target_dir, files)
 
-        # (4) Run the reform.py
-        runReform(target_dir, ref_fasta, ref_gff, timestamp)
+            if not request.form['position'] and request.files['upstream_fasta'].filename and request.files[
+                'downstream_fasta'].filename:
+                upload(target_dir, 'upstream_fasta')
+                upload(target_dir, 'downstream_fasta')
 
-        # (5) Add to Database
-        if not os.path.isfile('database.db'):
-            create_db()
+            # (4) Download files from user provided URLs to server
+            ref_fasta = download(target_dir, 'ref_fasta')
+            ref_gff = download(target_dir, 'ref_gff')
 
-        try:
-            with sqlite3.connect("database.db") as con:
-                cur = con.cursor()
-                cur.execute(
-                    'INSERT INTO submissions (timestamp, email, status, chrom, upstream_fasta, downstream_fasta, '
-                    'position, ref_fasta, ref_gff, in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    (timestamp,
-                     request.form['email'],
-                     status,
-                     request.form['chrom'],
-                     request.files[
-                         'upstream_fasta'].filename,
-                     request.files[
-                         'downstream_fasta'].filename,
-                     request.form['position'],
-                     request.form['ref_fasta'],
-                     request.form['ref_gff'],
-                     request.files[
-                         'in_fasta'].filename,
-                     request.files[
-                         'in_gff'].filename))
+            # (5) Run the reform.py
+            try:
+                runReform(target_dir, ref_fasta, ref_gff, timestamp)
 
+                flash('Job ' + timestamp + ' submitted')
+
+                con.execute("UPDATE submissions SET status=? where timestamp=? ", ("running", timestamp))
                 con.commit()
-                flash("Record successfully added")
-        except:
-            con.rollback()
-            flash("error in insert operation")
+                con.close()
+                return redirect(url_for('submit'))
 
-        flash('Job ' + timestamp + ' submitted')
-        return redirect(url_for('submit'))
+            except:
+                flash('Job ' + timestamp + ' failed')
+                con.execute("UPDATE submissions SET status=? where timestamp=?", ("failed", timestamp))
+                con.commit()
+                con.close()
+
     return render_template('form.html', form=form)
 
 
