@@ -1,20 +1,31 @@
 import datetime
 import os
+import subprocess
+
 import wget
 
-from flask import Flask, render_template, request, flash, url_for
+from flask import Flask, render_template, request, flash, url_for, send_file, Markup
 from werkzeug.utils import redirect
 from werkzeug.utils import secure_filename
 
 from forms import SubmitJob
 import sqlite3
 
+from flask_mail import Mail, Message
+
 app = Flask(__name__)
 # TODO: Move this secret_key out
 app.secret_key = 'development key'
 
-# TODO: Remove when going into production
+app.config['MAIL_SERVER'] = 'smtp.nyu.edu'
+app.config['MAIL_PORT'] = 25
+app.config['MAIL_USERNAME'] = 'reform-test@nyu.edu'
+app.config['MAIL_PASSWORD'] = ''
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
 
+# TODO: Remove when going into production
 if os.name == 'nt':  # If Windows
     UPLOAD_FOLDER = 'uploads'
 else:
@@ -31,21 +42,20 @@ def submit():
     if request.method == 'POST' and form.validate():
         if (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and request.form[
             'position']:
-            flash("Error: You must provide either the position, or the upstream and downstream sequences.")
+            flash("Error: You must provide either the position, or the upstream and downstream sequences.", 'error')
             return redirect(url_for('submit'))
         if request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename:
-            flash("Error: Must enter both upstream and downstream")
+            flash("Error: Must enter both upstream and downstream", 'error')
             return redirect(url_for('submit'))
         if not (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and not \
-        request.form['position']:
-            flash("Error: You must provide either the position, or the upstream and downstream sequences.")
+                request.form['position']:
+            flash("Error: You must provide either the position, or the upstream and downstream sequences.", 'error')
             return redirect(url_for('submit'))
         else:
             # User Submits Job #
             # (1) Create unique ID for each submission
             timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
             target_dir = os.path.join(UPLOAD_FOLDER, timestamp)
-
             # (2) Log to Database
             status = "submitted"
             if not os.path.isfile('database.db'):
@@ -74,10 +84,10 @@ def submit():
                              'in_gff'].filename))
 
                     con.commit()
-                    flash("Record successfully added")
+                    flash("Record successfully added", 'debug')
             except:
                 con.rollback()
-                flash("error in insert operation")
+                flash("error in insert operation", 'error')
 
             # (3) Upload files from user device to server
             # Verify all files are present before uploading
@@ -102,22 +112,36 @@ def submit():
 
             # (5) Run the reform.py
             try:
+                flash(u'Job ' + timestamp + ' submitted', 'info')
                 runReform(target_dir, ref_fasta, ref_gff, timestamp)
 
-                flash('Job ' + timestamp + ' submitted')
+                send_email(request.form['email'], timestamp)
 
-                con.execute("UPDATE submissions SET status=? where timestamp=? ", ("running", timestamp))
+                flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
+
+                con.execute("UPDATE submissions SET status=? where timestamp=? ", ("complete", timestamp))
                 con.commit()
                 con.close()
                 return redirect(url_for('submit'))
 
             except:
-                flash('Job ' + timestamp + ' failed')
+                flash(u'Job ' + timestamp + ' failed', 'error')
                 con.execute("UPDATE submissions SET status=? where timestamp=?", ("failed", timestamp))
                 con.commit()
                 con.close()
 
     return render_template('form.html', form=form)
+
+
+@app.route('/download/<timestamp>')
+def downloadFile(timestamp):
+    try:
+        path = "./results/" + timestamp + "/" + timestamp + ".tar.gz"
+        return send_file(path, as_attachment=True)
+    except:
+        flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
+        flash("Download Error: File does not exist - " + path, 'error')
+        return redirect(url_for('submit'))
 
 
 def allowed_file(filename):
@@ -133,7 +157,7 @@ def verify_uploads(file):
     if fileObj and allowed_file(fileObj.filename):
         return True
     else:
-        flash('Invalid File Type for ' + file)
+        flash('Invalid File Type for ' + file, 'error')
         return False
 
 
@@ -177,8 +201,13 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp):
             ref_gff,
             "./results/" + timestamp + "/"
         )
-    flash(command)
-    os.system(command)
+    flash(command, 'debug')
+
+    output = subprocess.getoutput(command)
+    print("OUTPUT IS " + output + "<-------")
+    # os.system(command)
+
+    os.system('tar -czf results/' + timestamp + '/' + timestamp + '.tar.gz -C results/' + timestamp + '/ .')
 
 
 def create_db():
@@ -187,6 +216,14 @@ def create_db():
         'CREATE TABLE submissions (timestamp TEXT, email TEXT, status TEXT, chrom TEXT, upstream_fasta TEXT, '
         'downstream_fasta TEXT, position TEXT, ref_fasta TEXT, ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
     conn.close()
+
+
+def send_email(email, timestamp):
+    msg = Message('reform results', sender='reform-test@nyu.edu', recipients=[email])
+    print("TIMESTAMP=" + timestamp)
+    msg.html = "reform job complete. <a href='http://localhost:5000/download/" + timestamp + "'> Click here to download " \
+                                                                                             "results.</a> "
+    mail.send(msg)
 
 
 if __name__ == '__main__':

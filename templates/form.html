@@ -1,47 +1,118 @@
 {% extends "index.html" %}
 {% block content %}
-{% with messages = get_flashed_messages() %}
+<style>
+    table#form {
+        width: 100%;
+
+    }
+
+    table#formchoice {
+        width: 100%;
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    table#formchoice tr th {
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 10px
+    }
+
+
+</style>
+
+{% with messages = get_flashed_messages(category_filter=["info"]) %}
 {% if messages %}
-<ul class=flashes>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
+<table bgcolor="#ccffcc" border="0" width="100%">
+    <tr>
+        <th>
+            {% for message in messages %}
+            {{ message }}<br>
+            {% endfor %}
+        </th>
+    </tr>
+</table>
+<p></p>
+{% endif %}
+
+{% endwith %}
+
+{% with messages = get_flashed_messages(category_filter=["error"]) %}
+{% if messages %}
+<table bgcolor="#ff8080" boreder="0 width=" 100%"">
+<tr>
+    <th>
+        {% for message in messages %}
+        {{ message }}<br>
+        {% endfor %}
+    </th>
+</tr>
+</table>
+<p></p>
+{% endif %}
+
+{% endwith %}
+
+{% with messages = get_flashed_messages(category_filter=["debug"]) %}
+{% if messages %}
+<table bgcolor="#99ccff" boreder="0" width="100%">
+    <tr>
+        <th>
+            {% for message in messages %}
+            {{ message }}<br>
+            {% endfor %}
+        </th>
+    </tr>
+</table>
+<p></p>
 {% endif %}
 {% endwith %}
 
 {% from "_formhelpers.html" import render_field %}
 <form method="POST" enctype="multipart/form-data">
-    <dl>
-        {{ render_field(form.email) }}
-        {{ render_field(form.chrom) }}
-        {{ render_field(form.ref_fasta) }}
-        {{ render_field(form.ref_gff) }}
-        {{ render_field(form.in_fasta) }}
-        {{ render_field(form.in_gff) }}
-        <table border="1px black" cellpadding="5">
-            <tr>
-                <th rowspan="2" width="180px">
-                    NOTE: <p>
+    <table id="form">
+        <tr>
+            <th colspan="2">{{ render_field(form.email) }}</th>
+        </tr>
+        <tr>
+            <th colspan="2">{{ render_field(form.chrom) }}</th>
+        </tr>
+        <tr>
+            <th colspan="2">{{ render_field(form.ref_fasta) }}</th>
+        </tr>
+        <tr>
+            <th colspan="2">{{ render_field(form.ref_gff) }}</th>
+        </tr>
+        <tr>
+            <th width=50%>{{ render_field(form.in_fasta) }}</th>
+            <th width=50%>{{ render_field(form.in_gff) }}</th>
+        </tr>
+        <tr>
+            <table id="formchoice">
+                <tr>
+                    <th rowspan="2" width="180px">
+                        NOTE: <p>
                     <span style="font-weight:normal">
                         Either position, or upstream AND downstream sequence must be provided.
                     </span>
-                </th>
-                <th><p>
-                    {{ render_field(form.position) }}
-                </p>
-                </th>
-            </tr>
-            <tr>
-                <th><p>
-
-                    {{ render_field(form.upstream_fasta) }}
-                    {{ render_field(form.downstream_fasta) }}
-                </p>
-                </th>
-            </tr>
-        </table>
-    </dl>
+                    </th>
+                    <th colspan="2"><p>
+                        {{ render_field(form.position) }}
+                    </p>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="border:none"><p>
+                        {{ render_field(form.upstream_fasta) }}
+                    </p></th>
+                    <th style="border:none"><p>
+                        {{ render_field(form.downstream_fasta) }}
+                    </p>
+                    </th>
+                </tr>
+            </table>
+        </tr>
+    </table>
     <p><input type=submit value=SUBMIT>
 </form>
 {% endblock %}

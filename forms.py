@@ -1,7 +1,7 @@
 from flask_wtf.file import FileRequired, FileAllowed
 from wtforms import FileField
 from wtforms import Form, StringField, validators
-from wtforms.validators import URL, Optional, InputRequired, Email
+from wtforms.validators import URL, Optional, InputRequired, Email, DataRequired
 from validators import RequiredIf, NotRequiredIf
 
 ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
@@ -20,7 +20,7 @@ class SubmitJob(Form):
                             Email()
                         ])
 
-    chrom = StringField('chrom',
+    chrom = StringField('Chromosome',
                         description="ID of the chromosome to modify",
                         render_kw={
                             "value": "X"
@@ -31,7 +31,7 @@ class SubmitJob(Form):
                         ])
 
     # POSITION
-    position = StringField('position',
+    position = StringField('Position',
                            description="Position in chromosome at which to insert <in_fasta>. Can use -1 to add to end "
                                        "of chromosome. Note: Position is 0-based",
                            render_kw={
@@ -39,14 +39,14 @@ class SubmitJob(Form):
                            },
                            validators=[Optional()])
     # OR
-    upstream_fasta = FileField('upstream_fasta',
+    upstream_fasta = FileField('Upstream Sequence',
                                description="FASTA file with upstream sequence.",
                                # validators=[Optional()])
                                validators=[
                                    # NotRequiredIf("position", message="error")
                                    Optional()
                                ])
-    downstream_fasta = FileField('downstream_fasta',
+    downstream_fasta = FileField('Downstream Sequence',
                                  description="FASTA file with downstream sequence.",
                                  # validators=[Optional()])
                                  validators=[
@@ -55,23 +55,25 @@ class SubmitJob(Form):
                                  ])
 
     # Uploads
-    in_fasta = FileField('in_fasta',
-                         description="File of new sequence to be inserted into reference genome in FASTA format.",
+    in_fasta = FileField('Inserted Sequence (FASTA)',
+                         description="New sequence to be inserted into reference genome.",
                          # validators=[Optional()])
                          validators=[
-                             # FileRequired(),
-                             # FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type')
+                             Optional(),
+                             FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type'),
+                             FileRequired()
                          ])
-    in_gff = FileField('in_gff',
+    in_gff = FileField('Inserted Reference (gff3 or gtf)',
                        description="GFF file describing new FASTA sequence to be inserted.",
                        # validators=[Optional()])
                        validators=[
-                           # FileRequired(),
-                           # FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type')
+                           Optional(),
+                           FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type'),
+                           InputRequired()
                        ])
     # Downloads
-    ref_fasta = StringField('ref_fasta',
-                            description="Path to reference FASTA file.",
+    ref_fasta = StringField('Reference Sequence (FASTA)',
+                            description="URL to reference FASTA file.",
                             render_kw={
                                 "placeholder": "Enter Reference URL",
                                 "value": "https://raw.githubusercontent.com/gencorefacility/reform/master/test_data/7/ref.fa"
@@ -81,8 +83,8 @@ class SubmitJob(Form):
                                 URL(),
                                 InputRequired()
                             ])
-    ref_gff = StringField('ref_gff',
-                          description="Path to reference gff file.",
+    ref_gff = StringField('Reference Annotation (gff3 or gtf)',
+                          description="URL to reference gff file.",
                           render_kw={
                               "placeholder": "Enter Reference URL",
                               "value": "https://raw.githubusercontent.com/gencorefacility/reform/master/test_data/7/ref.gtf"
