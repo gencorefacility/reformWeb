@@ -12,6 +12,9 @@ from forms import SubmitJob
 import sqlite3
 
 from flask_mail import Mail, Message
+from rq import Queue
+from rq.job import Job
+from worker import conn
 
 app = Flask(__name__)
 # TODO: Move this secret_key out
@@ -24,6 +27,8 @@ app.config['MAIL_PASSWORD'] = ''
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
+
+q = Queue(connection=conn)
 
 # TODO: Remove when going into production
 if os.name == 'nt':  # If Windows
@@ -106,29 +111,34 @@ def submit():
                 upload(target_dir, 'upstream_fasta')
                 upload(target_dir, 'downstream_fasta')
 
-            # (4) Download files from user provided URLs to server
-            ref_fasta = download(target_dir, 'ref_fasta')
-            ref_gff = download(target_dir, 'ref_gff')
+            job = q.enqueue_call(
+                func=redis, args=(target_dir, timestamp, con), result_ttl=5000
+            )
+            print(job.get_id())
 
-            # (5) Run the reform.py
-            try:
-                flash(u'Job ' + timestamp + ' submitted', 'info')
-                runReform(target_dir, ref_fasta, ref_gff, timestamp)
-
-                send_email(request.form['email'], timestamp)
-
-                flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
-
-                con.execute("UPDATE submissions SET status=? where timestamp=? ", ("complete", timestamp))
-                con.commit()
-                con.close()
-                return redirect(url_for('submit'))
-
-            except:
-                flash(u'Job ' + timestamp + ' failed', 'error')
-                con.execute("UPDATE submissions SET status=? where timestamp=?", ("failed", timestamp))
-                con.commit()
-                con.close()
+            # # (4) Download files from user provided URLs to server
+            # ref_fasta = download(target_dir, 'ref_fasta')
+            # ref_gff = download(target_dir, 'ref_gff')
+            #
+            # # (5) Run the reform.py
+            # try:
+            #     flash(u'Job ' + timestamp + ' submitted', 'info')
+            #     runReform(target_dir, ref_fasta, ref_gff, timestamp)
+            #
+            #     send_email(request.form['email'], timestamp)
+            #
+            #     flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
+            #
+            #     con.execute("UPDATE submissions SET status=? where timestamp=? ", ("complete", timestamp))
+            #     con.commit()
+            #     con.close()
+            #     return redirect(url_for('submit'))
+            #
+            # except:
+            #     flash(u'Job ' + timestamp + ' failed', 'error')
+            #     con.execute("UPDATE submissions SET status=? where timestamp=?", ("failed", timestamp))
+            #     con.commit()
+            #     con.close()
 
     return render_template('form.html', form=form)
 
@@ -224,6 +234,32 @@ def send_email(email, timestamp):
     msg.html = "reform job complete. <a href='http://localhost:5000/download/" + timestamp + "'> Click here to download " \
                                                                                              "results.</a> "
     mail.send(msg)
+
+
+def redis(target_dir, timestamp, con):
+    # (4) Download files from user provided URLs to server
+    ref_fasta = download(target_dir, 'ref_fasta')
+    ref_gff = download(target_dir, 'ref_gff')
+
+    # (5) Run the reform.py
+    try:
+        flash(u'Job ' + timestamp + ' submitted', 'info')
+        runReform(target_dir, ref_fasta, ref_gff, timestamp)
+
+        send_email(request.form['email'], timestamp)
+
+        flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
+
+        con.execute("UPDATE submissions SET status=? where timestamp=? ", ("complete", timestamp))
+        con.commit()
+        con.close()
+        return redirect(url_for('submit'))
+
+    except:
+        flash(u'Job ' + timestamp + ' failed', 'error')
+        con.execute("UPDATE submissions SET status=? where timestamp=?", ("failed", timestamp))
+        con.commit()
+        con.close()
 
 
 if __name__ == '__main__':
