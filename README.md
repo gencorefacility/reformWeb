@@ -5,16 +5,25 @@ A [*ref*orm](https://github.com/gencorefacility/reform) web UI implemented by [F
   <img src="static/reform.png" width="20%">
 </p>
 
+## Install Redis
+
+```shell
+wget http://download.redis.io/releases/redis-5.0.5.tar.gz
+tar xzf redis-5.0.5.tar.gz
+cd redis-5.0.5
+make
+```
+
 ## Configure Environment
 
-```bash
+```shell
 python3 -m venv /path/to/venv
 source /path/to/venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ## Start the Application
-```bash
+```shell script
 python app.py
 ```
 Open URL: `localhost:5000`
