@@ -1,11 +1,9 @@
 import os
 import sqlite3
-import subprocess
 
 import wget
-from flask import request, flash, url_for, Markup
+from flask import request, flash
 from flask_mail import Message, Mail
-from werkzeug.utils import redirect
 from werkzeug.utils import secure_filename
 
 from app import ALLOWED_EXTENSIONS, app
@@ -22,30 +20,23 @@ mail = Mail(app)
 def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
              in_fasta, in_gff):
     # (4) Download files from user provided URLs to server
-    ref_fasta = download(target_dir, ref_fastaURL)
-    ref_gff = download(target_dir, ref_gffURL)
+    try:
+        ref_fasta = download(target_dir, ref_fastaURL)
+        ref_gff = download(target_dir, ref_gffURL)
+    except Exception as e:
+        # TODO: e-mal of failure
+        print("ERROR: " + e)
+        update_db(timestamp, "failed to download references")
 
     # (5) Run the reform.py
     try:
-        # flash(u'Job ' + timestamp + ' submitted', 'info')
         runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fasta, in_gff, upstream_fasta,
                   downstream_fasta)
-
         send_email(email, timestamp)
-
-        # flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
-
-        # con.execute("UPDATE submissions SET status=? where timestamp=? ", ("complete", timestamp))
-        # con.commit()
-        # con.close()
-        return redirect(url_for('submit'))
-
-    except:
-        print("except")
-        # flash(u'Job ' + timestamp + ' failed', 'error')
-        # con.execute("UPDATE submissions SET status=? where timestamp=?", ("failed", timestamp))
-        # con.commit()
-        # con.close()
+        update_db(timestamp, "complete")
+    except Exception as e:
+        print("ERROR: " + e)
+        update_db(timestamp, "failed running reform")
 
 
 def allowed_file(filename):
@@ -81,7 +72,6 @@ def download(target_dir, URL):
 
 def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fasta, in_gff, upstream_fasta,
               downstream_fasta):
-    os.system("mkdir results/" + timestamp)
     if position:
         command = 'python reform.py --chrom {} --position {} --in_fasta {} --in_gff {} --ref_fasta {} --ref_gff {} ' \
                   '--output_dir {}'.format(chrom,
@@ -107,23 +97,29 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fas
                                                                        ref_gff,
                                                                        "./results/" + timestamp + "/"
                                                                        )
-    # flash(command, 'debug')
+    os.system("mkdir results/" + timestamp)
     os.system(command)
-
     os.system('tar -czf results/' + timestamp + '/' + timestamp + '.tar.gz -C results/' + timestamp + '/ .')
-
-
-def create_db():
-    conn = sqlite3.connect('database.db')
-    conn.execute(
-        'CREATE TABLE submissions (timestamp TEXT, email TEXT, status TEXT, chrom TEXT, upstream_fasta TEXT, '
-        'downstream_fasta TEXT, position TEXT, ref_fasta TEXT, ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
-    conn.close()
 
 
 def send_email(email, timestamp):
     with app.app_context():
         msg = Message('reform results', sender='reform-test@nyu.edu', recipients=[email])
-        msg.html = "reform job complete. <a href='http://localhost:5000/download/" + timestamp + "'> Click here to download " \
-                                                                                                 "results.</a> "
+        msg.html = "reform job complete. <a href='https://reform.bio.nyu.edu/download/" + timestamp \
+                   + "'> Click here to download results.</a> "
         mail.send(msg)
+
+
+def db_create():
+    db = sqlite3.connect('database.db')
+    db.execute(
+        'CREATE TABLE submissions (timestamp TEXT, email TEXT, status TEXT, chrom TEXT, upstream_fasta TEXT, '
+        'downstream_fasta TEXT, position TEXT, ref_fasta TEXT, ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
+    db.close()
+
+
+def update_db(timestamp, status):
+    db = sqlite3.connect('database.db')
+    db.execute("UPDATE submissions SET status=? where timestamp=? ", (status, timestamp))
+    db.commit()
+    db.close()

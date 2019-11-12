@@ -1,9 +1,10 @@
 import datetime
 
-from flask import Flask, render_template, send_file
-from flask_mail import Mail
+from flask import Flask, render_template, send_file, url_for
+from markupsafe import Markup
 from redis import Redis
 from rq import Queue
+from werkzeug.utils import redirect
 
 from forms import SubmitJob
 from job import *
@@ -12,20 +13,7 @@ app = Flask(__name__)
 # TODO: Move this secret_key out
 app.secret_key = 'development key'
 
-app.config['MAIL_SERVER'] = 'smtp.nyu.edu'
-app.config['MAIL_PORT'] = 25
-app.config['MAIL_USERNAME'] = 'reform-test@nyu.edu'
-app.config['MAIL_PASSWORD'] = ''
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = False
-mail = Mail(app)
-
-# TODO: Remove when going into production
-if os.name == 'nt':  # If Windows
-    UPLOAD_FOLDER = 'uploads'
-else:
-    UPLOAD_FOLDER = './uploads'
-
+UPLOAD_FOLDER = './uploads'
 UPLOAD_FILES = ['in_fasta', 'in_gff']
 DOWNLOAD_FILES = ['ref_fasta', 'ref_gff']
 ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
@@ -54,7 +42,7 @@ def submit():
             # (2) Log to Database
             status = "submitted"
             if not os.path.isfile('database.db'):
-                create_db()
+                db_create()
 
             try:
                 with sqlite3.connect("database.db") as con:
@@ -108,18 +96,15 @@ def submit():
                                             timestamp,
                                             request.form['email'],
                                             request.form['chrom'],
-                                            request.files[
-                                                'upstream_fasta'].filename,
-                                            request.files[
-                                                'downstream_fasta'].filename,
+                                            request.files['upstream_fasta'].filename,
+                                            request.files['downstream_fasta'].filename,
                                             request.form['position'],
                                             request.form['ref_fasta'],
                                             request.form['ref_gff'],
-                                            request.files[
-                                                'in_fasta'].filename,
-                                            request.files[
-                                                'in_gff'].filename))
-            print(job.get_id())
+                                            request.files['in_fasta'].filename,
+                                            request.files['in_gff'].filename)
+                            )
+            flash("JOB ID: " + job.get_id(), 'info')
 
     return render_template('form.html', form=form)
 
@@ -129,9 +114,9 @@ def downloadFile(timestamp):
     try:
         path = "./results/" + timestamp + "/" + timestamp + ".tar.gz"
         return send_file(path, as_attachment=True)
-    except:
+    except Exception as e:
         flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
-        flash("Download Error: File does not exist - " + path, 'error')
+        flash("Download Error: File does not exist - " + path + "   " + e, 'error')
         return redirect(url_for('submit'))
 
 
