@@ -107,11 +107,8 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fas
                                                                        ref_gff,
                                                                        "./results/" + timestamp + "/"
                                                                        )
-    flash(command, 'debug')
-
-    output = subprocess.getoutput(command)
-    print("OUTPUT IS " + output + "<-------")
-    # os.system(command)
+    # flash(command, 'debug')
+    os.system(command)
 
     os.system('tar -czf results/' + timestamp + '/' + timestamp + '.tar.gz -C results/' + timestamp + '/ .')
 
@@ -125,8 +122,8 @@ def create_db():
 
 
 def send_email(email, timestamp):
-    msg = Message('reform results', sender='reform-test@nyu.edu', recipients=[email])
-    print("TIMESTAMP=" + timestamp)
-    msg.html = "reform job complete. <a href='http://localhost:5000/download/" + timestamp + "'> Click here to download " \
-                                                                                             "results.</a> "
-    mail.send(msg)
+    with app.app_context():
+        msg = Message('reform results', sender='reform-test@nyu.edu', recipients=[email])
+        msg.html = "reform job complete. <a href='http://localhost:5000/download/" + timestamp + "'> Click here to download " \
+                                                                                                 "results.</a> "
+        mail.send(msg)
