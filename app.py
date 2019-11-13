@@ -40,37 +40,10 @@ def submit():
             timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
             target_dir = os.path.join(UPLOAD_FOLDER, timestamp)
             # (2) Log to Database
-            status = "submitted"
             if not os.path.isfile('database.db'):
                 db_create()
 
-            try:
-                with sqlite3.connect("database.db") as con:
-                    cur = con.cursor()
-                    cur.execute(
-                        'INSERT INTO submissions (timestamp, email, status, chrom, upstream_fasta, downstream_fasta, '
-                        'position, ref_fasta, ref_gff, in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        (timestamp,
-                         request.form['email'],
-                         status,
-                         request.form['chrom'],
-                         request.files[
-                             'upstream_fasta'].filename,
-                         request.files[
-                             'downstream_fasta'].filename,
-                         request.form['position'],
-                         request.form['ref_fasta'],
-                         request.form['ref_gff'],
-                         request.files[
-                             'in_fasta'].filename,
-                         request.files[
-                             'in_gff'].filename))
-
-                    con.commit()
-                    flash("Record successfully added", 'debug')
-            except:
-                con.rollback()
-                flash("error in insert operation", 'error')
+            db_submit(request, timestamp)
 
             # (3) Upload files from user device to server
             # Verify all files are present before uploading
@@ -104,8 +77,10 @@ def submit():
                                             request.files['in_fasta'].filename,
                                             request.files['in_gff'].filename)
                             )
-            flash("JOB ID: " + job.get_id(), 'info')
-
+            db_update(timestamp, "jobID", job.get_id())
+            flash(Markup('JOB ID: ' + job.get_id() + '<br>' +
+                         'Click <a href="https://reform.bio.nyu.edu/download/' + timestamp + '">here</a> to download'),
+                  'info')
     return render_template('form.html', form=form)
 
 
