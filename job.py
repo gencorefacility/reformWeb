@@ -26,17 +26,17 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
     except Exception as e:
         # TODO: e-mal of failure
         print("ERROR: " + e)
-        update_db(timestamp, "failed to download references")
+        db_update(timestamp, "status", "failed to download references")
 
     # (5) Run the reform.py
     try:
         runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fasta, in_gff, upstream_fasta,
                   downstream_fasta)
         send_email(email, timestamp)
-        update_db(timestamp, "complete")
+        db_update(timestamp, "status", "complete")
     except Exception as e:
         print("ERROR: " + e)
-        update_db(timestamp, "failed running reform")
+        db_update(timestamp, "status", "failed running reform")
 
 
 def allowed_file(filename):
@@ -113,13 +113,44 @@ def send_email(email, timestamp):
 def db_create():
     db = sqlite3.connect('database.db')
     db.execute(
-        'CREATE TABLE submissions (timestamp TEXT, email TEXT, status TEXT, chrom TEXT, upstream_fasta TEXT, '
-        'downstream_fasta TEXT, position TEXT, ref_fasta TEXT, ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
+        'CREATE TABLE submissions (jobID TEXT, timestamp TEXT, email TEXT, status TEXT, chrom TEXT, upstream_fasta '
+        'TEXT, downstream_fasta TEXT, position TEXT, ref_fasta TEXT, ref_gff TEXT, in_fasta TEXT, in_gff TEXT)')
     db.close()
 
 
-def update_db(timestamp, status):
+def db_submit(request, timestamp):
+    try:
+        with sqlite3.connect("database.db") as con:
+            cur = con.cursor()
+            cur.execute(
+                'INSERT INTO submissions (jobID, timestamp, email, status, chrom, upstream_fasta, '
+                'downstream_fasta, position, ref_fasta, ref_gff, in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, '
+                '?, ?, ?, ?, ?, ?)',
+                ("none",
+                 timestamp,
+                 request.form['email'],
+                 "submitted",
+                 request.form['chrom'],
+                 request.files[
+                     'upstream_fasta'].filename,
+                 request.files[
+                     'downstream_fasta'].filename,
+                 request.form['position'],
+                 request.form['ref_fasta'],
+                 request.form['ref_gff'],
+                 request.files[
+                     'in_fasta'].filename,
+                 request.files[
+                     'in_gff'].filename))
+
+            con.commit()
+    except Exception as e:
+        con.rollback()
+        flash("error in insert operation " + e, 'error')
+
+
+def db_update(timestamp, set_id, set_value):
     db = sqlite3.connect('database.db')
-    db.execute("UPDATE submissions SET status=? where timestamp=? ", (status, timestamp))
+    db.execute("UPDATE submissions SET ?=? where timestamp=? ", (set_id, set_value, timestamp))
     db.commit()
     db.close()
