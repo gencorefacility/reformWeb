@@ -61,7 +61,7 @@ def verify_uploads(file):
 def upload(target_dir, file):
     fileObj = request.files[file]
     # make the directory based on timestamp
-    os.system('mkdir ' + target_dir)
+    os.system('mkdir -p ' + target_dir)
     # save the file
     fileObj.save(os.path.join(target_dir,
                               secure_filename(fileObj.filename)))
@@ -99,7 +99,7 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fas
                                                                        ref_gff,
                                                                        "./results/" + timestamp + "/"
                                                                        )
-    os.system("mkdir results/" + timestamp)
+    os.system("mkdir -p results/" + timestamp)
     os.system(command)
     os.system('tar -czf results/' + timestamp + '/' + timestamp + '.tar.gz -C results/' + timestamp + '/ .')
 
