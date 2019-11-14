@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Flask, render_template, send_file, url_for
+from flask import render_template, send_file, url_for
 from markupsafe import Markup
 from redis import Redis
 from rq import Queue
@@ -16,7 +16,6 @@ app.secret_key = 'development key'
 UPLOAD_FOLDER = './uploads'
 UPLOAD_FILES = ['in_fasta', 'in_gff']
 DOWNLOAD_FILES = ['ref_fasta', 'ref_gff']
-ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -96,4 +95,4 @@ def downloadFile(timestamp):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0')

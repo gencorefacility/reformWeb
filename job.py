@@ -2,19 +2,21 @@ import os
 import sqlite3
 
 import wget
-from flask import request, flash
+from flask import request, flash, Flask
 from flask_mail import Message, Mail
 from werkzeug.utils import secure_filename
 
-from app import ALLOWED_EXTENSIONS, app
+from forms import ALLOWED_EXTENSIONS
 
-app.config['MAIL_SERVER'] = 'smtp.nyu.edu'
-app.config['MAIL_PORT'] = 25
-app.config['MAIL_USERNAME'] = 'reform-test@nyu.edu'
-app.config['MAIL_PASSWORD'] = ''
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = False
-mail = Mail(app)
+j = Flask(__name__)
+
+j.config['MAIL_SERVER'] = 'smtp.nyu.edu'
+j.config['MAIL_PORT'] = 25
+j.config['MAIL_USERNAME'] = 'reform-test@nyu.edu'
+j.config['MAIL_PASSWORD'] = ''
+j.config['MAIL_USE_TLS'] = False
+j.config['MAIL_USE_SSL'] = False
+mail = Mail(j)
 
 
 def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
@@ -103,7 +105,7 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fas
 
 
 def send_email(email, timestamp):
-    with app.app_context():
+    with j.app_context():
         msg = Message('reform results', sender='reform-test@nyu.edu', recipients=[email])
         msg.html = "reform job complete. <a href='https://reform.bio.nyu.edu/download/" + timestamp \
                    + "'> Click here to download results.</a> "
@@ -131,26 +133,22 @@ def db_submit(request, timestamp):
                  request.form['email'],
                  "submitted",
                  request.form['chrom'],
-                 request.files[
-                     'upstream_fasta'].filename,
-                 request.files[
-                     'downstream_fasta'].filename,
+                 request.files['upstream_fasta'].filename,
+                 request.files['downstream_fasta'].filename,
                  request.form['position'],
                  request.form['ref_fasta'],
                  request.form['ref_gff'],
-                 request.files[
-                     'in_fasta'].filename,
-                 request.files[
-                     'in_gff'].filename))
-
+                 request.files['in_fasta'].filename,
+                 request.files['in_gff'].filename)
+            )
             con.commit()
-    except Exception as e:
+    except:
         con.rollback()
-        flash("error in insert operation " + e, 'error')
+        flash("error in insert operation ", 'error')
 
 
 def db_update(timestamp, set_id, set_value):
     db = sqlite3.connect('database.db')
-    db.execute("UPDATE submissions SET ?=? where timestamp=? ", (set_id, set_value, timestamp))
+    db.execute("UPDATE submissions SET " + set_id + "=? where timestamp=? ", (set_value, timestamp))
     db.commit()
     db.close()
