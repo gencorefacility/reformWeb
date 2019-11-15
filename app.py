@@ -79,8 +79,7 @@ def submit():
                             )
             db_update(timestamp, "jobID", job.get_id())
             flash(Markup('JOB ID: ' + job.get_id() + '<br>' +
-                         'Click <a href="https://reform.bio.nyu.edu/download/' + timestamp + '">here</a> to download'),
-                  'info')
+                         "You'll receive an e-mail when job is done with download link"), 'info')
     return render_template('form.html', form=form)
 
 
@@ -90,7 +89,7 @@ def downloadFile(timestamp):
         path = "./results/" + timestamp + "/" + timestamp + ".tar.gz"
         return send_file(path, as_attachment=True)
     except:
-        flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
+        # flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
         flash("Download Error: File does not exist - " + path, 'error')
         return redirect(url_for('submit'))
 
