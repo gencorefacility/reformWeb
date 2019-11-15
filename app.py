@@ -74,7 +74,8 @@ def submit():
                                             request.form['ref_fasta'],
                                             request.form['ref_gff'],
                                             request.files['in_fasta'].filename,
-                                            request.files['in_gff'].filename)
+                                            request.files['in_gff'].filename),
+                            result_ttl=-1
                             )
             db_update(timestamp, "jobID", job.get_id())
             flash(Markup('JOB ID: ' + job.get_id() + '<br>' +
