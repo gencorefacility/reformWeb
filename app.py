@@ -89,9 +89,9 @@ def downloadFile(timestamp):
     try:
         path = "./results/" + timestamp + "/" + timestamp + ".tar.gz"
         return send_file(path, as_attachment=True)
-    except Exception as e:
+    except:
         flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
-        flash("Download Error: File does not exist - " + path + "   " + e, 'error')
+        flash("Download Error: File does not exist - " + path, 'error')
         return redirect(url_for('submit'))
 
 
