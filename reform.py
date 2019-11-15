@@ -18,7 +18,14 @@ def main():
     record = list(SeqIO.parse(in_arg.in_fasta, "fasta"))[0]
 
     ## Generate index of sequences from ref reference fasta
-    chrom_seqs = SeqIO.index(in_arg.ref_fasta, 'fasta')
+    try:
+        chrom_seqs = SeqIO.index(in_arg.ref_fasta, 'fasta')
+    except:
+        if "gz" in in_arg.ref_fasta:
+            os.system("gunzip in_arg.ref_fasta")
+            chrom_seqs = SeqIO.index(in_arg.ref_fasta[0:-3], 'fasta')
+        else:
+            print("ERROR READING REF_FASTA")
 
     ## Obtain the sequence of the chromosome we want to modify
     seq = chrom_seqs[in_arg.chrom]
