@@ -25,9 +25,9 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
     try:
         ref_fasta = download(target_dir, ref_fastaURL)
         ref_gff = download(target_dir, ref_gffURL)
-    except Exception as e:
+    except:
         # TODO: e-mal of failure
-        print("ERROR: " + e)
+        print("ERROR: ")
         db_update(timestamp, "status", "failed to download references")
 
     # (5) Run the reform.py
@@ -36,8 +36,8 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
                   downstream_fasta)
         send_email(email, timestamp)
         db_update(timestamp, "status", "complete")
-    except Exception as e:
-        print("ERROR: " + e)
+    except:
+        print("ERROR: ")
         db_update(timestamp, "status", "failed running reform")
 
 
