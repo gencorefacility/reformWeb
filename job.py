@@ -30,6 +30,15 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
         print("ERROR: ")
         db_update(timestamp, "status", "failed to download references")
 
+    # Are the downloads compressed (gzip)
+    if "gz" in ref_fasta:
+        os.system("gunzip " + ref_fasta)
+        ref_fasta = ref_fasta[0:-3]
+    if "gz" in ref_gff:
+        os.system("gunzip" + ref_gff)
+        ref_gff = ref_gff[0:-3]
+
+
     # (5) Run the reform.py
     try:
         runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fasta, in_gff, upstream_fasta,
