@@ -35,7 +35,7 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
         os.system("gunzip " + ref_fasta)
         ref_fasta = ref_fasta[0:-3]
     if "gz" in ref_gff:
-        os.system("gunzip" + ref_gff)
+        os.system("gunzip " + ref_gff)
         ref_gff = ref_gff[0:-3]
 
 
