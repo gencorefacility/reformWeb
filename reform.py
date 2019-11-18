@@ -6,26 +6,15 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import generic_dna
 
-
 def main():
     ## Retrieve command line arguments
     in_arg = get_input_args()
-
-    ## Retrieve ouptut directory
-    output_dir = in_arg.output_dir
 
     ## Read the new fasta (to be inserted into the ref genome)
     record = list(SeqIO.parse(in_arg.in_fasta, "fasta"))[0]
 
     ## Generate index of sequences from ref reference fasta
-    try:
-        chrom_seqs = SeqIO.index(in_arg.ref_fasta, 'fasta')
-    except:
-        if "gz" in in_arg.ref_fasta:
-            os.system("gunzip in_arg.ref_fasta")
-            chrom_seqs = SeqIO.index(in_arg.ref_fasta[0:-3], 'fasta')
-        else:
-            print("ERROR READING REF_FASTA")
+    chrom_seqs = SeqIO.index(in_arg.ref_fasta, 'fasta')
 
     ## Obtain the sequence of the chromosome we want to modify
     seq = chrom_seqs[in_arg.chrom]
@@ -54,7 +43,7 @@ def main():
     ## Create new fasta file with modified chromosome
     ref_basename = os.path.basename(in_arg.ref_fasta)
     ref_name = os.path.splitext(ref_basename)[0]
-    new_fasta = output_dir + ref_name + '_reformed.fa'
+    new_fasta = ref_name + '_reformed.fa'
     with open(new_fasta, "w") as f:
         for s in chrom_seqs:
             if s == seq.id:
@@ -71,12 +60,11 @@ def main():
     ## Create new gff file
     annotation_basename = os.path.basename(in_arg.ref_gff)
     (annotation_name, annotation_ext) = os.path.splitext(annotation_basename)
-    new_gff_name = output_dir + annotation_name + '_reformed' + annotation_ext
+    new_gff_name = annotation_name + '_reformed' + annotation_ext
     new_gff = create_new_gff(new_gff_name, in_arg.ref_gff, in_gff_lines, position, down_position, seq.id,
                              len(str(record.seq)))
     print("New {} file created: {} ".format(annotation_ext.upper(), new_gff.name))
-
-
+	
 def modify_gff_line(elements, start=None, end=None, comment=None):
     '''
     Modifies an existing GFF line and returns the modified line. Currently, you can
@@ -100,8 +88,7 @@ def modify_gff_line(elements, start=None, end=None, comment=None):
     ## Return the modified line
     return ("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(elements[0], elements[1], elements[2], start, end, elements[5],
                                                         elements[6], elements[7], comment))
-
-
+	
 def get_in_gff_lines(in_gff):
     '''
     Takes a gff file and returns a list of lists where
@@ -122,8 +109,7 @@ def get_in_gff_lines(in_gff):
                 exit()
             in_gff_lines.append(line_elements)
     return in_gff_lines
-
-
+	
 def get_position(position, upstream, downstream, chrom, seq_str):
     '''
     Determine the position in seq_str to insert the new sequence given
@@ -174,7 +160,6 @@ def get_position(position, upstream, downstream, chrom, seq_str):
         exit()
     return {'position': position, 'down_position': down_position}
 
-
 def write_in_gff_lines(gff_out, in_gff_lines, position, split_features):
     for l in in_gff_lines:
         new_gff_line = modify_gff_line(
@@ -190,7 +175,6 @@ def write_in_gff_lines(gff_out, in_gff_lines, position, split_features):
 
     ## Return True after writing the new GFF lines
     return True
-
 
 def create_new_gff(new_gff_name, ref_gff, in_gff_lines, position, down_position, chrom_id, new_seq_length):
     '''
@@ -382,8 +366,6 @@ def create_new_gff(new_gff_name, ref_gff, in_gff_lines, position, down_position,
     gff_out.close()
 
     return gff_out
-
-
 def format_comment(comment, ext):
     '''
     Format comment according to ext (GFF or GTF) and return
@@ -396,8 +378,7 @@ def format_comment(comment, ext):
         print("** Error: Unrecognized extension {} in format_comment(). Exiting".format(ext))
         exit()
     return new_comment
-
-
+	
 def rename_id(line):
     '''
     Given a gff or gtf  line, this function will append the string "_split"
@@ -416,8 +397,7 @@ def rename_id(line):
     else:
         print("This feature will not be renamed because it does not has an ID/gene_id attribute:\n", line)
         return attributes
-
-
+		
 def get_input_args():
     parser = argparse.ArgumentParser()
 
@@ -437,17 +417,13 @@ def get_input_args():
                         help="Path to reference fasta file")
     parser.add_argument('--ref_gff', type=str, required=True,
                         help="Path to reference gff file")
-    parser.add_argument('--output_dir', type=str, default=None,
-                        help="Path to output to")
 
     in_args = parser.parse_args()
-
     if in_args.position is None and (in_args.upstream_fasta is None or in_args.downstream_fasta is None):
         print("** Error: You must provide either the position, or the upstream and downstream sequences.")
         exit()
 
     return in_args
-
-
+	
 if __name__ == "__main__":
     main()
