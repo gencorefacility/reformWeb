@@ -39,13 +39,23 @@ if [[ ${ref_gff: -3} == ".gz" ]]; then
 fi
 
 # Run reform.py
+echo "mkdir -p ./results/$timestamp"
 mkdir -p ./results/$timestamp
 
 if [ ! -z "$position" ]; then
+  echo   /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
+  --in_gff ./uploads/$timestamp/$in_gff --ref_fasta ./uploads/$timestamp/$ref_fasta --ref_gff ./uploads/$timestamp/$ref_gff \
+  --output_dir "./results/$timestamp/"
+
   /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
   --in_gff ./uploads/$timestamp/$in_gff --ref_fasta ./uploads/$timestamp/$ref_fasta --ref_gff ./uploads/$timestamp/$ref_gff \
   --output_dir "./results/$timestamp/"
 else
+  echo   /home/reform/venv/bin/python reform.py --chrom $chrom --upstream_fasta ./uploads/$timestamp/$upstream_fasta \
+  --downstream_fasta ./uploads/$timestamp/$downstream_fasta --in_fasta ./uploads/$timestamp/$in_fasta \
+  --in_gff ./uploads/$timestamp/$in_gff --ref_fasta ./uploads/$timestamp/$ref_fasta --ref_gff ./uploads/$timestamp/$ref_gff \
+  --output_dir "./results/$timestamp/"
+
   /home/reform/venv/bin/python reform.py --chrom $chrom --upstream_fasta ./uploads/$timestamp/$upstream_fasta \
   --downstream_fasta ./uploads/$timestamp/$downstream_fasta --in_fasta ./uploads/$timestamp/$in_fasta \
   --in_gff ./uploads/$timestamp/$in_gff --ref_fasta ./uploads/$timestamp/$ref_fasta --ref_gff ./uploads/$timestamp/$ref_gff \
