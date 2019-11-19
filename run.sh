@@ -42,7 +42,7 @@ fi
 mkdir -p ./results/$timestamp
 
 if [ ! -z "$position" ]; then
-  echo /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
+  /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
   --in_gff ./uploads/$timestamp/$in_gff --ref_fasta ./uploads/$timestamp/$ref_fasta --ref_gff ./uploads/$timestamp/$ref_gff \
   --output_dir "./results/$timestamp/"
 else
