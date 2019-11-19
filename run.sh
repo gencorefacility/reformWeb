@@ -42,12 +42,14 @@ fi
 mkdir -p ./results/$timestamp
 
 if [ ! -z "$position" ]; then
-  /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta $in_fasta \
-  --in_gff $in_gff --ref_fasta $ref_fasta --ref_gff $ref_gff --output_dir "./results/$timestamp/"
+  echo /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
+  --in_gff ./uploads/$timestamp/$in_gff --ref_fasta ./uploads/$timestamp/$ref_fasta --ref_gff ./uploads/$timestamp/$ref_gff \
+  --output_dir "./results/$timestamp/"
 else
-  /home/reform/venv/bin/python reform.py --chrom $chrom --upstream_fasta $upstream_fasta \
-  --downstream_fasta $downstream_fasta --in_fasta $in_fasta --in_gff $in_gff --ref_fasta $ref_fasta \
-  --ref_gff $ref_gff --output_dir "./results/$timestamp/"
+  /home/reform/venv/bin/python reform.py --chrom $chrom --upstream_fasta ./uploads/$timestamp/$upstream_fasta \
+  --downstream_fasta ./uploads/$timestamp/$downstream_fasta --in_fasta ./uploads/$timestamp/$in_fasta \
+  --in_gff ./uploads/$timestamp/$in_gff --ref_fasta ./uploads/$timestamp/$ref_fasta --ref_gff ./uploads/$timestamp/$ref_gff \
+  --output_dir "./results/$timestamp/"
 fi
 
 #tar -czf ./results/$timestamp/$timestamp.tar.gz -C results/$timestamp / .
