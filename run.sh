@@ -27,12 +27,12 @@ echo "ref_fasta=$ref_fasta & ref_gff=$ref_gff"
 # Are the downloads compressed (gzip)
 if [[ ${ref_fasta: -3} == ".gz" ]]; then
   gunzip $target_dir/$ref_fasta
-  ref_fasta=${ref_fasta:: -4}
+  ref_fasta=${ref_fasta:: -3}
 fi
 
 if [[ ${ref_gff: -3} == ".gz" ]]; then
   gunzip $target_dir/$ref_gff
-  ref_gff=${ref_gff:: -4}
+  ref_gff=${ref_gff:: -3}
 fi
 
 echo "ref_fasta=$ref_fasta & ref_gff=$ref_gff"
