@@ -62,7 +62,7 @@ def submit():
                 upload(target_dir, 'downstream_fasta')
 
             redis_conn = Redis()
-            q = Queue(connection=redis_conn)
+            q = Queue(connection=redis_conn, timeout=3000)
 
             job = q.enqueue(redisjob, args=(target_dir,
                                             timestamp,
@@ -76,7 +76,7 @@ def submit():
                                             request.files['in_fasta'].filename,
                                             request.files['in_gff'].filename),
                             result_ttl=-1,
-                            timeout=2000
+                            timeout=3000
                             )
             db_update(timestamp, "jobID", job.get_id())
             flash(Markup('JOB ID: ' + job.get_id() + '<br>' +
