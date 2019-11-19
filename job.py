@@ -21,10 +21,15 @@ mail = Mail(j)
 
 def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
              in_fasta, in_gff):
-    command = "/home/reformWeb/run.sh {} {} {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
-                                                                               upstream_fasta, downstream_fasta,
-                                                                               position, ref_fastaURL, ref_gffURL,
-                                                                               in_fasta, in_gff)
+    if position:
+        command = "/home/reformWeb/run.sh {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
+                                                                             ref_fastaURL, ref_gffURL, in_fasta,
+                                                                             in_gff, position)
+    else:
+        command = "/home/reformWeb/run.sh {} {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
+                                                                                ref_fastaURL, ref_gffURL, in_fasta,
+                                                                                in_gff, upstream_fasta,
+                                                                                downstream_fasta)
     os.system(command)
 
 
