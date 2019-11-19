@@ -62,5 +62,9 @@ else
   --output_dir "./results/$timestamp/"
 fi
 
+# remove upload folder
+rm -Rf ./uploads/$timestamp
+
+
 #tar -czf ./results/$timestamp/$timestamp.tar.gz -C results/$timestamp / .
 
