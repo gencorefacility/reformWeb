@@ -21,6 +21,15 @@ mail = Mail(j)
 
 def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
              in_fasta, in_gff):
+    command = "/home/reformWeb/run.sh {} {} {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
+                                                                               upstream_fasta, downstream_fasta,
+                                                                               position, ref_fastaURL, ref_gffURL,
+                                                                               in_fasta, in_gff)
+    os.system(command)
+
+
+def redisjob1(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
+              in_fasta, in_gff):
     # (4) Download files from user provided URLs to server
     try:
         ref_fasta = download(target_dir, ref_fastaURL)
@@ -37,7 +46,6 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
     if "gz" in ref_gff:
         os.system("gunzip " + ref_gff)
         ref_gff = ref_gff[0:-3]
-
 
     # (5) Run the reform.py
     try:
