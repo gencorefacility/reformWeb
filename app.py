@@ -87,7 +87,7 @@ def submit():
 @app.route('/download/<timestamp>')
 def downloadFile(timestamp):
     try:
-        path = "./downloads/" + timestamp + "/reform.tar.gz"
+        path = "./downloads/" + timestamp + "/reformed.tar.gz"
         return send_file(path, as_attachment=True)
     except:
         # flash(Markup('click <a href="./download/' + timestamp + '">here to download</a>'), 'info')
