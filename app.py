@@ -62,7 +62,7 @@ def submit():
                 upload(target_dir, 'downstream_fasta')
 
             redis_conn = Redis()
-            q = Queue(connection=redis_conn, timeout=3000)
+            q = Queue(connection=redis_conn, default_timeout=3000)
 
             job = q.enqueue(redisjob, args=(target_dir,
                                             timestamp,
