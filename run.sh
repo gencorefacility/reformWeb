@@ -28,13 +28,13 @@ wget -nv $ref_gffURL -O $target_dir/$ref_gff
 # If downloads compresssed (gzip), uncompress with pigz
 if [[ ${ref_fasta: -3} == ".gz" ]]; then
   echo "pigz -d $target_dir/$ref_fasta"
-  pigz -dc $target_dir/$ref_fasta
+  pigz -d $target_dir/$ref_fasta
   ref_fasta=${ref_fasta:: -3}
 fi
 
 if [[ ${ref_gff: -3} == ".gz" ]]; then
   echo "pigz -dc $target_dir/$ref_gff"
-  pigz -dc $target_dir/$ref_gff
+  pigz -d $target_dir/$ref_gff
   ref_gff=${ref_gff:: -3}
 fi
 
