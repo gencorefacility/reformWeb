@@ -31,9 +31,9 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
                                                                        in_gff, upstream_fasta,
                                                                        downstream_fasta)
     os.system(command)
-    os.system("Emailing")
+    os.system("echo Emailing")
     send_email(email, timestamp)
-    os.system("Emailed")
+    os.system("echo Emailed")
     db_update(timestamp, "status", "complete")
 
 

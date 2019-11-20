@@ -76,7 +76,7 @@ def submit():
                                             request.files['in_fasta'].filename,
                                             request.files['in_gff'].filename),
                             result_ttl=-1,
-                            timeout=3000
+                            job_timeout=3000
                             )
             db_update(timestamp, "jobID", job.get_id())
             flash(Markup('JOB ID: ' + job.get_id() + '<br>' +
