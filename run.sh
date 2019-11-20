@@ -17,24 +17,24 @@ elif [ "$#" -eq 10 ]; then
 fi
 
 # Download files from user provided URLs to server
-echo "wget ref_fasta"
 ref_fasta=$(basename "$ref_fastaURL")
+echo "wget -nv $ref_fastaURL -O $target_dir/$ref_fasta"
 wget -nv $ref_fastaURL -O $target_dir/$ref_fasta
 
-echo "wget ref_gff"
 ref_gff=$(basename "$ref_gffURL")
+echo "wget -nv $ref_gffURL -O $target_dir/$ref_gff"
 wget -nv $ref_gffURL -O $target_dir/$ref_gff
 
-# Are the downloads compressed (gzip)
+# If downloads compresssed (gzip), uncompress with pigz
 if [[ ${ref_fasta: -3} == ".gz" ]]; then
-  echo "gunzip $target_dir/$ref_fasta"
-  gunzip $target_dir/$ref_fasta
+  echo "pigz -d $target_dir/$ref_fasta"
+  pigz -dc $target_dir/$ref_fasta
   ref_fasta=${ref_fasta:: -3}
 fi
 
 if [[ ${ref_gff: -3} == ".gz" ]]; then
-  echo "gunzip $target_dir/$ref_gff"
-  gunzip $target_dir/$ref_gff
+  echo "pigz -dc $target_dir/$ref_gff"
+  pigz -dc $target_dir/$ref_gff
   ref_gff=${ref_gff:: -3}
 fi
 
@@ -63,8 +63,13 @@ else
 fi
 
 # remove upload folder
+echo "rm -Rf ./uploads/$timestamp"
 rm -Rf ./uploads/$timestamp
 
+# create downloads directory
+echo "mkdir -p ./downloads/$timestamp"
+mkdir -p ./downloads/$timestamp
 
-#tar -czf ./results/$timestamp/$timestamp.tar.gz -C results/$timestamp / .
-
+# compress reformed files to downloads
+echo "tar cf - ./results/$timestamp/ | pigz --best > ./downloads/$timestamp/reformed.tar.gz"
+tar cf - ./results/$timestamp/ | pigz --best > ./downloads/$timestamp/reformed.tar.gz

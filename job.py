@@ -31,6 +31,8 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
                                                                        in_gff, upstream_fasta,
                                                                        downstream_fasta)
     os.system(command)
+    send_email(email, timestamp)
+    db_update(timestamp, "status", "complete")
 
 
 def redisjob1(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
