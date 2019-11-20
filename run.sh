@@ -33,7 +33,7 @@ if [[ ${ref_fasta: -3} == ".gz" ]]; then
 fi
 
 if [[ ${ref_gff: -3} == ".gz" ]]; then
-  echo "pigz -dc $target_dir/$ref_gff"
+  echo "pigz -d $target_dir/$ref_gff"
   pigz -d $target_dir/$ref_gff
   ref_gff=${ref_gff:: -3}
 fi
