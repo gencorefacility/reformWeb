@@ -16,6 +16,10 @@ elif [ "$#" -eq 10 ]; then
   downstream_fasta="${10}"
 fi
 
+echo "########################################"
+echo "[$(date "+%D %T")] START $timestamp"
+echo "########################################"
+
 # Download files from user provided URLs to server
 ref_fasta=$(basename "$ref_fastaURL")
 echo "wget -nv $ref_fastaURL -O $target_dir/$ref_fasta"
@@ -71,5 +75,9 @@ echo "mkdir -p ./downloads/$timestamp"
 mkdir -p ./downloads/$timestamp
 
 # compress reformed files to downloads
-echo "tar cf - ./results/$timestamp/ | pigz --best > ./downloads/$timestamp/reformed.tar.gz"
-tar cf - ./results/$timestamp/ | pigz --best > ./downloads/$timestamp/reformed.tar.gz
+echo "tar cf - ./results/$timestamp/ | pigz  > ./downloads/$timestamp/reformed.tar.gz"
+tar cf - ./results/$timestamp/ | pigz > ./downloads/$timestamp/reformed.tar.gz
+
+echo "########################################"
+echo "[$(date "+%D %T")] END $timestamp"
+echo "########################################"
