@@ -30,11 +30,17 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
                                                                        ref_fastaURL, ref_gffURL, in_fasta,
                                                                        in_gff, upstream_fasta,
                                                                        downstream_fasta)
-    os.system(command)
-    os.system("echo Emailing")
-    send_email(email, timestamp)
-    os.system("echo Emailed")
-    db_update(timestamp, "status", "complete")
+    try:
+        os.system(command)
+        os.system("echo Emailing")
+        send_email(email, timestamp)
+        os.system("echo Emailed")
+        db_update(timestamp, "status", "complete")
+    except:
+        os.system("echo Command Failed")
+        send_email_error(email, timestamp)
+
+
 
 
 def redisjob1(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
@@ -132,9 +138,16 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fas
 
 def send_email(email, timestamp):
     with j.app_context():
-        msg = Message('reform results', sender='reform-test@nyu.edu', recipients=[email])
+        msg = Message('reform results', sender='reform@nyu.edu', recipients=[email])
         msg.html = "reform job complete. <a href='https://reform.bio.nyu.edu/download/" + timestamp \
                    + "'> Click here to download results.</a> "
+        mail.send(msg)
+
+
+def send_email_error(email):
+    with j.app_context():
+        msg = Message('reform results - error', sender='reform@nyu.edu', recipients=[email])
+        msg.html = "reform job had an error. Please resubmit."
         mail.send(msg)
 
 
