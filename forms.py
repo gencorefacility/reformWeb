@@ -17,7 +17,7 @@ class SubmitJob(Form):
                         ])
 
     chrom = StringField('Chromosome',
-                        description="ID of the chromosome to modify",
+                        description="ID of the chromosome to modify. Must match ID in FASTA file.",
                         validators=[
                             InputRequired()
                         ])
@@ -56,7 +56,7 @@ class SubmitJob(Form):
                        ])
     # Downloads
     ref_fasta = StringField('Reference Sequence (FASTA)',
-                            description="URL to reference FASTA file.",
+                            description="URL to reference FASTA file. e.g. ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz"",
                             render_kw={
                                 "placeholder": "Enter Reference URL",
                             },
@@ -65,7 +65,7 @@ class SubmitJob(Form):
                                 InputRequired()
                             ])
     ref_gff = StringField('Reference Annotation (gff3 or gtf)',
-                          description="URL to reference gff file.",
+                          description="URL to reference gff file. e.g. ftp://ftp.ensembl.org/pub/release-88/gff3/mus_musculus/Mus_musculus.GRCm38.88.gff3.gz",
                           render_kw={
                               "placeholder": "Enter Reference URL",
                           },
