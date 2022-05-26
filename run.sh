@@ -22,12 +22,12 @@ echo "########################################"
 
 # Download files from user provided URLs to server
 ref_fasta=$(basename "$ref_fastaURL")
-echo "wget -nv $ref_fastaURL -O $target_dir/$ref_fasta"
-wget -nv $ref_fastaURL -O $target_dir/$ref_fasta
+echo "wget --no-check-certificate -nv $ref_fastaURL -O $target_dir/$ref_fasta"
+wget --no-check-certificate -nv $ref_fastaURL -O $target_dir/$ref_fasta
 
 ref_gff=$(basename "$ref_gffURL")
-echo "wget -nv $ref_gffURL -O $target_dir/$ref_gff"
-wget -nv $ref_gffURL -O $target_dir/$ref_gff
+echo "wget --no-check-certificate -nv $ref_gffURL -O $target_dir/$ref_gff"
+wget --no-check-certificate -nv $ref_gffURL -O $target_dir/$ref_gff
 
 # If downloads compresssed (gzip), uncompress with pigz
 if [[ ${ref_fasta: -3} == ".gz" ]]; then
