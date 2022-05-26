@@ -56,7 +56,7 @@ class SubmitJob(Form):
                        ])
     # Downloads
     ref_fasta = StringField('Reference Sequence (FASTA)',
-                            description="URL to reference FASTA file. e.g. ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz"",
+                            description="URL to reference FASTA file. e.g. ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz",
                             render_kw={
                                 "placeholder": "Enter Reference URL",
                             },
