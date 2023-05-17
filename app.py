@@ -10,7 +10,7 @@ from forms import SubmitJob
 from job import *
 
 app = Flask(__name__)
-# TODO: Move this secret_key out
+# TODO: Move this secret_key outa
 app.secret_key = 'development key'
 
 UPLOAD_FOLDER = './uploads'
