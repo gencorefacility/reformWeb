@@ -5,37 +5,8 @@ A [*ref*orm](https://github.com/gencorefacility/reform) web UI implemented by [F
   <img src="static/reform.png" width="20%">
 </p>
 
-
-## Configure Environment
-
-```shell script
-python3 -m venv ~/venv
-source ~/venv/bin/activate
-pip install -r requirements.txt
-```
-
-## Install Redis
-
-```shell script
-yum install -y redis
-systemctl start redis
-systemctl enable redis
-```
-
-## Start rq worker
-
-```shell script
-# in reformWeb directory
-rq worker
-```
-
-## Start the Application
-```shell script
-# in reformWeb directory
-gunicorn app:app -b localhost:8000
-```
-
-Open URL: `localhost:8000`
+## Installation
+Installation script found at `./INSTALL/install.sh`
 
 ## Using the Site
 
