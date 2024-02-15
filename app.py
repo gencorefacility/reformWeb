@@ -29,7 +29,7 @@ def submit():
         if (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename):
             if not (request.files['downstream_fasta'].filename and request.files['upstream_fasta'].filename):
                 flash("Error: Must enter both upstream and downstream", 'error')
-            return redirect(url_for('submit'))
+                return redirect(url_for('submit'))
         if not (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and not \
                 request.form['position']:
             flash("Error: You must provide either the position, or the upstream and downstream sequences.", 'error')
