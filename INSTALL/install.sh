@@ -35,6 +35,17 @@ pip install -r /home/reform/reformWeb/requirements.txt
 echo "source ~/venv/bin/activate" >> /home/reform/.bashrc
 chown -R reform:reform /home/reform
 
+# Create data folders (uploads & downloads) outside of home folder
+# Reason as /home generally has limited storage space
+subdirectories=("downloads" "uploads" "results")
+dataDir="/data"
+for subdir in "${subdirectories[@]}"; do
+    mkdir -p "${dataDir}/${subdir}"
+    cp /home/reform/reformWeb/${subdir}/.gitignore ${dataDir}/${subdir}/.gitignore
+    rm -Rf /home/reform/reformWeb/${subdir}
+    ln -s ${dataDir}/${subdir} /home/reform/reformWeb/${subdir}
+done
+
 ##  redis server
 yum install -y redis
 systemctl start redis
