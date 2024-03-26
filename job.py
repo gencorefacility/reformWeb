@@ -39,7 +39,7 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
         db_update(timestamp, "status", "complete")
     except:
         os.system("echo Command Failed")
-        send_email_error(email, timestamp)
+        send_email_error(email)
 
 
 
