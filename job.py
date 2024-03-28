@@ -32,7 +32,8 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
                                                                        in_gff, upstream_fasta,
                                                                        downstream_fasta)
     try:
-        subprocess.run([command])
+        #subprocess.run([command])
+        os.system(command)
         os.system("echo Emailing")
         send_email(email, timestamp)
         os.system("echo Emailed")
