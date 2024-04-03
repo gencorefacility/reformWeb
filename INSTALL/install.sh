@@ -2,7 +2,7 @@
 
 # Initial System Setup
 yum update -y
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm git wget python3
+#yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm git wget python3
 
 # Install & Configure
 ## fail2ban
