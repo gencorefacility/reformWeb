@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Initial System Setup
-yum update -y
-#yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm git wget python3
+dnf update -y
+subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
+dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 
 # Install & Configure
 ## fail2ban
@@ -18,10 +19,16 @@ openssl req -out reform.bio.nyu.edu.csr -key reform.bio.nyu.edu.key -new -sha256
 openssl req -in reform.bio.nyu.edu.csr -noout -text
 
 echo "Request cert at https://www.nyu.edu/its/certificates/"
+# Download "Certificate only, PEM encoded" and "Root/Intermediate(s) only, PEM encoded"
+# Append interm chaing to cert
+#   cat reform_bio_nyu_edu_interm.cer >> reform_bio_nyu_edu_cert.cer
 
 ## nginx
 yum install nginx -y
 cp ./conf/nginx.conf /etc/nginx/conf.d/default.conf
+setsebool -P httpd_can_network_connect 1
+# If permission fails for a cert or file execute:
+# chcon -t httpd_config_t /path/to/key
 systemctl start nginx
 systemctl enable nginx
 
@@ -52,7 +59,7 @@ systemctl start redis
 systemctl enable redis
 
 ## redis workers
-cp ./conf/rqworker\@.service /etc/systemd/system/rqworker\@.service
+cp ./conf/systemd_worker.service /etc/systemd/system/rqworker\@.service
 for i in {1..3}
 do
    systemctl start rqworker@$i.service
@@ -60,7 +67,8 @@ do
 done
 
 # supervisord for gunicorn
-yum install supervisor
+dnf install -y supervisor
+mkdir -p /var/log/reform
 cp ./conf/supervisor_reform.ini /etc/supervisord.d/reform.ini
 systemctl start supervisord
 systemctl enable supervisord
