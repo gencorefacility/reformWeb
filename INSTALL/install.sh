@@ -7,11 +7,20 @@ dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.r
 
 # Install & Configure
 ## fail2ban
-yum install -y fail2ban
+dnf install -y fail2ban
 cp ./conf/fail2ban_jail.local /etc/fail2ban/jail.local
 cp ./conf/fail2ban_iptables-multiport.conf /etc/fail2ban/action.d/iptables-multiport.conf
 systemctl start fail2ban
 systemctl enable fail2ban
+
+# Limit SSH
+## Only allow SSH connections through NYU net & VPN. Root can only login with SSH key.
+echo """
+Match Address 128.122.0.0/16,216.165.16.0/20,216.165.32.0/19,216.165.64.0/18,128.238.0.0/16,91.230.41.0/24,193.146.139.0/25,192.114.110.0/24,193.206.104.0/24,193.205.158.0/25,212.219.93.0/24,195.113.94.0/24,193.175.54.0/24,203.174.165.128/25,194.214.81.0/24,103.242.128.0/22,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+PermitRootLogin prohibit-password
+AuthenticationMethods publickey password
+""" > /etc/ssh/sshd_config.d/only_nyu_net.conf
+systemctl reload sshd
 
 ## SSL cert
 openssl genrsa -out reform.bio.nyu.edu.key 2048
@@ -24,7 +33,7 @@ echo "Request cert at https://www.nyu.edu/its/certificates/"
 #   cat reform_bio_nyu_edu_interm.cer >> reform_bio_nyu_edu_cert.cer
 
 ## nginx
-yum install nginx -y
+dnf install nginx -y
 cp ./conf/nginx.conf /etc/nginx/conf.d/default.conf
 setsebool -P httpd_can_network_connect 1
 # If permission fails for a cert or file execute:
@@ -54,7 +63,7 @@ for subdir in "${subdirectories[@]}"; do
 done
 
 ##  redis server
-yum install -y redis
+dnf install -y redis
 systemctl start redis
 systemctl enable redis
 
