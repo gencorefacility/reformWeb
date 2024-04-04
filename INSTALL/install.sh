@@ -67,17 +67,9 @@ dnf install -y redis
 systemctl start redis
 systemctl enable redis
 
-## redis workers
-cp ./conf/systemd_worker.service /etc/systemd/system/rqworker\@.service
-for i in {1..3}
-do
-   systemctl start rqworker@$i.service
-   systemctl enable rqworker@$i.service
-done
-
 # supervisord for gunicorn
 dnf install -y supervisor
 mkdir -p /var/log/reform
-cp ./conf/supervisor_reform.ini /etc/supervisord.d/reform.ini
+cp ./conf/supervisor*ini /etc/supervisord.d/
 systemctl start supervisord
 systemctl enable supervisord
