@@ -1,5 +1,8 @@
 #!/bin/bash
 
+dnf -y install https://rhn.cfs.its.nyu.edu/pub/katello-ca-consumer-latest.noarch.rpm
+subscription-manager register --org="fas_biology" --activationkey="fas-bio-rh9-activation"
+
 # Initial System Setup
 dnf update -y
 subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
