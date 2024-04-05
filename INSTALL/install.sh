@@ -8,6 +8,35 @@ dnf update -y
 subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
 dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 
+# Secure
+# Partition Mounting Weakness
+# Configuration remediation steps
+# The specific way to modify the partition mount options varies from system to system. Consult your operating system's manual or mount man page.
+# To check the partition mounting options on a unix system run 'mount'. Run the command as root if necessary.
+# To check for partition mounting weakness we consider the following criteria:
+# /tmp and /var should have the following options set:
+# nosuid
+# noexec
+# /etc should have the following options set:
+# nosuid
+# noexec
+# /home should have the following options set:
+# nosuid
+# All partitions other than '/', '/dev', '/sys', and '/proc' should have the following options set:
+# nodev
+
+# Disable ICMP redirect support
+# Configuration remediation steps
+# Issue the following commands as root:
+# 
+#    sysctl -w net.ipv4.conf.all.accept_redirects=0
+#    sysctl -w net.ipv4.conf.default.accept_redirects=0
+#    sysctl -w net.ipv4.conf.all.secure_redirects=0
+#    sysctl -w net.ipv4.conf.default.secure_redirects=0
+# These settings can be added to /etc/sysctl.conf to make them permanent.
+
+
+
 # Install & Configure
 ## fail2ban
 dnf install -y fail2ban
