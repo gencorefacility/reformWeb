@@ -74,6 +74,7 @@ systemctl start nginx
 systemctl enable nginx
 
 # Create Application User
+dnf install python3-devel
 useradd reform
 mkdir /home/reform/reformWeb
 git clone https://github.com/gencorefacility/reformWeb.git /home/reform/reformWeb/
