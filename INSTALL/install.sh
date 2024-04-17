@@ -34,7 +34,10 @@ dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.r
 #    sysctl -w net.ipv4.conf.all.secure_redirects=0
 #    sysctl -w net.ipv4.conf.default.secure_redirects=0
 # These settings can be added to /etc/sysctl.conf to make them permanent.
-
+echo """sysctl -w net.ipv4.conf.all.accept_redirects=0
+sysctl -w net.ipv4.conf.default.accept_redirects=0
+sysctl -w net.ipv4.conf.all.secure_redirects=0
+sysctl -w net.ipv4.conf.default.secure_redirects=0""" >> /etc/sysctl.conf
 
 
 # Install & Configure
