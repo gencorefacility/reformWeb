@@ -21,7 +21,7 @@ mkl-fft==1.0.6
 mkl-random==1.0.1.1
 numpy==1.17.3
 redis==3.3.11
-requests==2.22.0
+requests==2.31.0
 rq==1.1.0
 six==1.13.0
 tbb==2019.0
