@@ -11,7 +11,7 @@ email_validator==2.1.1
 Flask==3.0.2
 Flask-Mail==0.9.1
 Flask-WTF==1.2.1
-gunicorn==21.2.0
+gunicorn==22.0.0
 icc-rt==2019.0
 idna==3.7
 importlib_metadata==7.1.0
