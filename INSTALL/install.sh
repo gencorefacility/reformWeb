@@ -51,9 +51,24 @@ systemctl enable fail2ban
 # Limit SSH
 ## Only allow SSH connections through NYU net & VPN. Root can only login with SSH key.
 echo """
-Match Address 128.122.0.0/16,216.165.16.0/20,216.165.32.0/19,216.165.64.0/18,128.238.0.0/16,91.230.41.0/24,193.146.139.0/25,192.114.110.0/24,193.206.104.0/24,193.205.158.0/25,212.219.93.0/24,195.113.94.0/24,193.175.54.0/24,203.174.165.128/25,194.214.81.0/24,103.242.128.0/22,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
-PermitRootLogin prohibit-password
-AuthenticationMethods publickey password
+## Block root login to every one ##
+PermitRootLogin no
+
+## No more password login  ##
+PermitEmptyPasswords no
+PasswordAuthentication no
+PubkeyAuthentication no
+
+Match Address 127.0.0.0/8,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,128.122.0.0/16,216.165.16.0/20,216.165.32.0/19,216.165.64.0/18,128.238.0.0/16,91.230.41.0/24,192.114.110.0/24,193.206.104.0/24,193.205.158.0/25,212.219.93.0/24,195.113.94.0/24,193.175.54.0/24,203.174.165.128/25,194.214.81.0/24,103.242.128.0/22
+   PermitRootLogin yes
+   PermitRootLogin without-password
+   PubkeyAuthentication yes
+   AuthenticationMethods publickey
+
+
+Match User root
+   PermitRootLogin no
+   AuthenticationMethods publickey
 """ > /etc/ssh/sshd_config.d/only_nyu_net.conf
 systemctl reload sshd
 
