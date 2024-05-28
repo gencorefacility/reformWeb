@@ -78,6 +78,10 @@ mkdir -p ./downloads/$timestamp
 echo "tar cf - ./results/$timestamp/ | pigz  > ./downloads/$timestamp/reformed.tar.gz"
 tar cf - ./results/$timestamp/ | pigz > ./downloads/$timestamp/reformed.tar.gz
 
+# remove results folder
+echo "rm -Rf ./results/$timestamp"
+rm -Rf ./results/$timestamp/
+
 echo "########################################"
 echo "[$(date "+%D %T")] END $timestamp"
 echo "########################################"
