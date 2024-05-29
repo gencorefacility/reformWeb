@@ -91,6 +91,21 @@ def verify_uploads(file):
         flash('Invalid File Type for ' + file, 'error')
         return False
 
+# verify upload files for test site
+def verify_test_uploads(file):
+    fileObj = request.files[file]
+
+    if fileObj.filename == '':
+        # flash('No ' + file + ' file selected for uploading', 'error')
+        # return False
+        return True # If no file is uploaded then the default file is used
+    if fileObj and allowed_file(fileObj.filename):
+        return True
+    else:
+        flash('Invalid File Type for ' + file, 'error')
+        return False
+
+
 
 def upload(target_dir, file):
     fileObj = request.files[file]
@@ -99,6 +114,25 @@ def upload(target_dir, file):
     # save the file
     fileObj.save(os.path.join(target_dir,
                               secure_filename(fileObj.filename)))
+# upload file function for test site
+def upload_test(target_dir, file_key, default_files):
+    # if file is empty (indicated use default file), fileObj set to None
+    fileObj = request.files[file_key] if file_key in request.files else None
+    os.makedirs(target_dir, exist_ok=True) # dirs for upload files
+    
+    if fileObj:
+        # save the uploaded file
+        filename = secure_filename(fileObj.filename)
+        file_path = os.path.join(target_dir, filename)
+        fileObj.save(file_path)
+        return fileObj.filename
+    else:
+        # Use the default file if no file was uploaded, pass realpath
+        src = os.path.abspath(default_files[file_key])
+        dst = os.path.join(target_dir, os.path.basename(src))  # link name in target_dir
+        if not os.path.exists(dst):  # Only create the symlink if it doesn't already exist
+            os.symlink(src, dst)  # Create a soft link
+        return os.path.basename(src)
 
 
 def download(target_dir, URL):
