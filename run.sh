@@ -45,6 +45,7 @@ download_and_decompress() {
 }
 
 # Create the upload directories
+echo "mkdir -p ./$target_dir"
 mkdir -p "./$target_dir"
 
 # Variables to hold the final paths to be used in the reform.py command
@@ -55,6 +56,9 @@ ref_gff_path="$ref_gff"
 if is_url "$ref_fasta"; then
     download_and_decompress "$ref_fasta" "./$target_dir"
     ref_fasta_path="./$target_dir/$(basename "$ref_fasta")"
+    if [[ ${ref_fasta_path: -3} == ".gz" ]]; then
+        ref_fasta_path="${ref_fasta_path::-3}"
+    fi
 else
     echo "Using local file: $ref_fasta"
     ref_fasta_path="$ref_fasta"
@@ -63,7 +67,10 @@ fi
 # Check and process the reference gff file
 if is_url "$ref_gff"; then
     download_and_decompress "$ref_gff" "./$target_dir"
-    ref_fasta_path="./$target_dir/$(basename "$ref_gff")"
+    ref_gff_path="./$target_dir/$(basename "$ref_gff")"
+    if [[ ${ref_gff_path: -3} == ".gz" ]]; then
+        ref_gff_path="${ref_gff_path::-3}"
+    fi
 else
     echo "Using local file: $ref_gff"
     ref_gff_path="$ref_gff"

@@ -6,7 +6,7 @@ from redis import Redis
 from rq import Queue
 from werkzeug.utils import redirect
 
-from forms import SubmitJob
+from forms import SubmitJob, Testjob
 from job import *
 
 app = Flask(__name__)
@@ -37,7 +37,7 @@ def submit():
         else:
             # User Submits Job #
             # (1) Create unique ID for each submission
-            timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')
             target_dir = os.path.join(UPLOAD_FOLDER, timestamp)
             # (2) Log to Database
             if not os.path.isfile('database.db'):
@@ -116,7 +116,7 @@ def submit_test():
         else:
             # User Submits Job #
             # (1) Create unique ID for each submission
-            timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')
             target_dir = os.path.join(UPLOAD_FOLDER, timestamp)
             # (2) Log to Database
             if not os.path.isfile('database.db'):

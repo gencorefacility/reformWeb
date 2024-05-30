@@ -4,14 +4,15 @@ from datetime import datetime, timedelta
 
 # Define the path for the log file
 primary_log_directory = "/var/log/reform"
+local_log_dirs = "./cleanuplog" # If not, use the local log directory
 
-if not os.path.exists(primary_log_directory):
-    local_log_dirs = "./cleanuplog" # If not, use the local log directory
+if os.path.exists(primary_log_directory) and os.access(primary_log_directory, os.W_OK):
+    log_file_path = os.path.join(primary_log_directory, "cleanup.log")
+else:
+    # If the primary log directory does not exist or is not writable, use the local log directory
     if not os.path.exists(local_log_dirs):
         os.makedirs(local_log_dirs)
-    log_file_path = os.path.join(local_log_dirs, "cleanup.log")
-else:
-    log_file_path = os.path.join(primary_log_directory, "cleanup.log") # create cleanup.log in /var/log/reform
+    log_file_path = os.path.join(local_log_dirs, "cleanup.log") # create cleanup.log in /var/log/reform
 
 # Configure logging
 logging.basicConfig(
