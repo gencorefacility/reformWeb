@@ -129,4 +129,4 @@ systemctl enable supervisord
 # Create the following cron job
 crontab -e
 # add following command to the files, and save it.
-0 * * * * /home/reform/venv/bin/python /home/reform/reformWeb/cleanup.sh
+0 1 * * * /home/reform/venv/bin/python /home/reform/reformWeb/cleanup.sh
