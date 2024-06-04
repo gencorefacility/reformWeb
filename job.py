@@ -178,15 +178,51 @@ def send_email(email, timestamp):
     deadline = datetime.now() + timedelta(hours=72)
     deadline_str = deadline.strftime('%Y-%m-%d %H:%M:%S')
 
+    # paths to the log files
+    err_log_path = f"./downloads/{timestamp}/{timestamp}-worker-err.log"
+    out_log_path = f"./downloads/{timestamp}/{timestamp}-worker-out.log"
+
+    # read the content of the log files
+    with open(err_log_path, 'r') as file:
+        err_log_content = file.read()
+
+    with open(out_log_path, 'r') as file:
+        out_log_content = file.read()
+
+
+    def send_email(email, timestamp):
+    # calculate 72h DDL
+    deadline = datetime.now() + timedelta(hours=72)
+    deadline_str = deadline.strftime('%Y-%m-%d %H:%M:%S')
+
+    # paths to the log files
+    err_log_path = f"./downloads/{timestamp}/{timestamp}-worker-err.log"
+    out_log_path = f"./downloads/{timestamp}/{timestamp}-worker-out.log"
+
+    # read the content of the log files
+    with open(err_log_path, 'r') as file:
+        err_log_content = file.read()
+
+    with open(out_log_path, 'r') as file:
+        out_log_content = file.read()
+
+
     with j.app_context():
         subject = f"Reform Results - Download Deadline: {deadline_str}"
         msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
         msg.html = f"""Reform job complete. 
-                       <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>. 
+                       <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results and related log files</a>. 
                        The file will be available for the next 72 hours. 
                        The deadline to download the file is {deadline_str}. 
-                       If you do not download the file before this time, it will be deleted."""
+                       If you do not download the file before this time, it will be deleted. <br><br>
+                       <b>Reform.py Output Log:</b><br><pre>{err_log_content}</pre><br>
+                       <b>Worker Output Log:</b><br><pre>{out_log_content}</pre>
+                       """
         mail.send(msg)
+
+    # Remove the log files from the download folder
+    os.remove(err_log_path)
+    os.remove(out_log_path)
 
 
 def send_email_error(email):
