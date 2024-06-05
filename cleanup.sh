@@ -9,12 +9,12 @@
 # path to the downloads directory
 download_folder="./downloads/"
 # cutoffMins = 1 week ago = 168 hours ago (in seconds)
-cutoffMins=$((168 * 60))
+cutoffMins=$((169 * 60)) # add 1 hour to handle edge case, which is job finished at 1:00 am.
 
 # Traverse the download folder and remove directories older than cutoff time
 # -mindepth 1: Excludes the top-level directory, includes only subdirectories
 find "$download_folder" -mindepth 1 -type d -mmin +$((cutoffMins)) | while read -r dirpath; do
-    echo "$dirpath"
+    # echo "$dirpath"
     if [ -d "$dirpath" ]; then
         timestamp=$(date '+%Y-%m-%d %H:%M:%S')
         rm -rf "$dirpath"
