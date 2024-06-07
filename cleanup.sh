@@ -6,7 +6,7 @@
 # and delete all sub-folders and files if the folder was created more than 1 week ago. If there are files in this folder,
 # the files will also be deleted one by one.
 
-# path to the downloads directory
+# Define path to the downloads directory
 download_folder="./downloads/"
 # cutoffMins = 1 week ago = 168 hours ago (in seconds)
 cutoffMins=$((169 * 60)) # add 1 hour to handle edge case, which is job finished at 1:00 am.
@@ -18,7 +18,8 @@ find "$download_folder" -mindepth 1 -type d -mmin +$((cutoffMins)) | while read 
     if [ -d "$dirpath" ]; then
         timestamp=$(date '+%Y-%m-%d %H:%M:%S')
         rm -rf "$dirpath"
-        result=$? # capture successful or failure
+        # Captures the success of the rm command
+        result=$?
         if [ $result -eq 0 ]; then
             echo "Removed old directory: $dirpath - $timestamp"
         else
