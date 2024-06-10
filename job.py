@@ -174,9 +174,9 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fas
 
 
 def send_email(email, timestamp):
-    # calculate 72h DDL
-    deadline = datetime.now() + timedelta(hours=72)
-    deadline_str = deadline.strftime('%Y-%m-%d %H:%M:%S')
+    # calculate 168h DDL
+    deadline = datetime.now() + timedelta(hours=168)
+    deadline_str = deadline.strftime('%B %d, %Y')
 
     # paths to the log files
     err_log_path = f"./downloads/{timestamp}/{timestamp}-worker-err.log"
@@ -211,8 +211,9 @@ def send_email(email, timestamp):
         subject = f"Reform Results - Download Deadline: {deadline_str}"
         msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
         msg.html = f"""Reform job complete. 
-                       <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results and related log files</a>. 
-                       The file will be available for the next 72 hours. 
+                       <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>. 
+                       The file will be available for the next 7 days.
+                       
                        The deadline to download the file is {deadline_str}. 
                        If you do not download the file before this time, it will be deleted. <br><br>
                        <b>Reform.py Output Log:</b><br><pre>{err_log_content}</pre><br>

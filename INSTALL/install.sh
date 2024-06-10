@@ -124,3 +124,9 @@ mkdir -p /var/log/reform
 cp ./conf/supervisor*ini /etc/supervisord.d/
 systemctl start supervisord
 systemctl enable supervisord
+
+
+# Create the following cron job
+crontab -e
+# add following command to the files, and save it.
+0 1 * * * /bin/bash /home/reform/reformWeb/cleanup.sh
