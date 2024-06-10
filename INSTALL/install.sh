@@ -143,5 +143,5 @@ wget --no-check-certificate -nv ftp://ftp.ensembl.org/pub/release-88/gff3/mus_mu
 # Create directory for inserted and up-down-seq
 mkdir ../inserted
 mkdir ../up-down-seq
-# Please upload files to inserted and up-down-seq.
-# And change the local files path in jobs.py line 97
+# Please upload files to inserted and up-down-seq folders, and relevent test files can be found in https://github.com/gencorefacility/reform/tree/master/test_data
+# After upload the inserted Seq and Up&Down Seq, please change the files path in app.py (https://github.com/gencorefacility/reformWeb/blob/7083d7fe682db149775f021f61a3bfdfdb57dc83/app.py#L92C1-L92C5)
