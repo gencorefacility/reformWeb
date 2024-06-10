@@ -20,6 +20,14 @@ echo "########################################"
 echo "[$(date "+%D %T")] START $timestamp"
 echo "########################################"
 
+# create results folder
+echo "mkdir -p ./results/$timestamp"
+mkdir -p ./results/$timestamp
+
+# redirect only stdout to the log file, keep stderr to worker.err.log and $timestamp-worker-err.log
+log_file="./results/$timestamp/$timestamp-worker-out.log"
+exec > >(tee -a "$log_file")
+
 # Function to determine if a path is a URL
 is_url() {
     if [[ $1 =~ ^https?:// ]] || [[ $1 =~ ^ftp:// ]]; then
@@ -77,8 +85,6 @@ else
 fi
 
 # Run reform.py
-echo "mkdir -p ./results/$timestamp"
-mkdir -p ./results/$timestamp
 
 if [ ! -z "$position" ]; then
   echo   /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
@@ -87,7 +93,7 @@ if [ ! -z "$position" ]; then
 
   /home/reform/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
   --in_gff ./uploads/$timestamp/$in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
-  --output_dir "./results/$timestamp/"
+  --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log
 else
   echo   /home/reform/venv/bin/python reform.py --chrom $chrom --upstream_fasta ./uploads/$timestamp/$upstream_fasta \
   --downstream_fasta ./uploads/$timestamp/$downstream_fasta --in_fasta ./uploads/$timestamp/$in_fasta \
@@ -97,7 +103,7 @@ else
   /home/reform/venv/bin/python reform.py --chrom $chrom --upstream_fasta ./uploads/$timestamp/$upstream_fasta \
   --downstream_fasta ./uploads/$timestamp/$downstream_fasta --in_fasta ./uploads/$timestamp/$in_fasta \
   --in_gff ./uploads/$timestamp/$in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
-  --output_dir "./results/$timestamp/"
+  --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log
 fi
 
 # remove upload folder
@@ -108,7 +114,11 @@ rm -Rf ./uploads/$timestamp
 echo "mkdir -p ./downloads/$timestamp"
 mkdir -p ./downloads/$timestamp
 
-# compress reformed files to downloads
+# copy log files to download folder for email use
+echo "cp -p ./results/$timestamp/$timestamp-worker-err.log ./results/$timestamp/$timestamp-worker-out.log ./downloads/$timestamp"
+cp -p ./results/$timestamp/$timestamp-worker-err.log ./results/$timestamp/$timestamp-worker-out.log ./downloads/$timestamp
+
+# compress reformed files and log files to downloads
 echo "tar cf - ./results/$timestamp/ | pigz  > ./downloads/$timestamp/reformed.tar.gz"
 tar cf - ./results/$timestamp/ | pigz > ./downloads/$timestamp/reformed.tar.gz
 
