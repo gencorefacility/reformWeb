@@ -130,3 +130,18 @@ systemctl enable supervisord
 crontab -e
 # add following command to the files, and save it.
 0 1 * * * /bin/bash /home/reform/reformWeb/cleanup.sh
+
+# Create local File folder for test site
+mkdir -p /home/reform/reformWeb/staticData
+cd /home/reform/reformWeb/staticData
+# Create directory for reference sequences and upload Exampl Ref Sequences
+# for example: 
+mkdir ref 
+cd ref
+wget --no-check-certificate -nv ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz
+wget --no-check-certificate -nv ftp://ftp.ensembl.org/pub/release-88/gff3/mus_musculus/Mus_musculus.GRCm38.88.gff3.gz
+# Create directory for inserted and up-down-seq
+mkdir ../inserted
+mkdir ../up-down-seq
+# Please upload files to inserted and up-down-seq folders, and relevent test files can be found in https://github.com/gencorefacility/reform/tree/master/test_data
+# After upload the inserted Seq and Up&Down Seq, please change the files path in app.py (https://github.com/gencorefacility/reformWeb/blob/7083d7fe682db149775f021f61a3bfdfdb57dc83/app.py#L92C1-L92C5)

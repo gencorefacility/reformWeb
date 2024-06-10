@@ -14,13 +14,14 @@ app = Flask(__name__)
 app.secret_key = 'development key'
 
 UPLOAD_FOLDER = './uploads'
+# The type of file that needs to be uploaded to the server by user.
 UPLOAD_FILES = ['in_fasta', 'in_gff']
-DOWNLOAD_FILES = ['ref_fasta', 'ref_gff']
 
-
+# Route for submitting data on the production site.
 @app.route('/', methods=['GET', 'POST'])
 def submit():
     form = SubmitJob(request.form)
+    # Validate user input according to the validation rules defined in forms.py.
     if request.method == 'POST' and form.validate():
         if (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and request.form[
             'position']:
@@ -62,9 +63,12 @@ def submit():
                 upload(target_dir, 'upstream_fasta')
                 upload(target_dir, 'downstream_fasta')
 
+            # (4) Send the job to the backend
+            # Connect to the Redis server and intial a queue
             redis_conn = Redis()
             q = Queue(connection=redis_conn, default_timeout=3000)
 
+            # Push job function and parameters into RQ
             job = q.enqueue(redisjob, args=(target_dir,
                                             timestamp,
                                             request.form['email'],
@@ -79,16 +83,17 @@ def submit():
                             result_ttl=-1,
                             job_timeout=3000
                             )
+            # (5) Update record in the database and flush message on the user front-end
             db_update(timestamp, "jobID", job.get_id())
             flash(Markup('JOB ID: ' + job.get_id() + '<br>' +
                          "You'll receive an e-mail when job is done with download link"), 'info')
     return render_template('form.html', form=form)
 
-# test site
+# Route for submitting data on the test site
 @app.route('/test', methods=['GET', 'POST'])
 def submit_test():
 
-    # Default in_fasta and in_gff
+    # Path for local files
     DEFAULT_FILES = {
         'ref_fasta': './staticData/ref/Mus_musculus.GRCm38.dna.toplevel.fa',
         'ref_gff': './staticData/ref/Mus_musculus.GRCm38.88.gff3',
@@ -97,8 +102,8 @@ def submit_test():
         'upstream_fasta': './staticData/up-down-seq/test-up.fa',
         'downstream_fasta': './staticData/up-down-seq/test-down.fa'
     }
-
-    form = Testjob(request.form) # test job 
+    # Validate user input based on test site rule
+    form = Testjob(request.form)
     if request.method == 'POST' and form.validate():
         if (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and request.form[
             'position']:
@@ -108,11 +113,6 @@ def submit_test():
             if not (request.files['downstream_fasta'].filename and request.files['upstream_fasta'].filename):
                 flash("Error: Must enter both upstream and downstream", 'error')
                 return redirect(url_for('submit'))
-        # # comment out the condition check, since we allowed default up/down stream fasta
-        # if not (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and not \
-        #         request.form['position']:
-        #     flash("Error: You must provide either the position, or the upstream and downstream sequences.", 'error')
-        #     return redirect(url_for('submit'))
         else:
             # User Submits Job #
             # (1) Create unique ID for each submission
@@ -131,23 +131,22 @@ def submit_test():
                 if not verified:
                     return redirect(url_for('submit'))
 
-            # Upload Files to UPLOAD_DIR/timestamp/ and save the name into uploaded_files or use local files
+            # Choose to upload new files or use local files
             if verified:
-                # Storing all files that will be passed to run.sh
                 uploaded_files = {}
-                for file_key in UPLOAD_FILES: # upload inserted files
+                for file_key in UPLOAD_FILES:
                     uploaded_files[file_key] = upload_test(target_dir, file_key, DEFAULT_FILES)
-                # set defualt None to up/down stream fasta
+                # Set defualt None to up/down stream fasta
                 for file_key in ['upstream_fasta', 'downstream_fasta']:
                     uploaded_files['upstream_fasta'] = None
                     uploaded_files['downstream_fasta'] = None
-
+            
+            # Uploaded upstream/downstream files when position is not provided
             if not request.form['position']:
-                # Handle case where position is not provided and upstream/downstream files are required
                 for file_key in ['upstream_fasta', 'downstream_fasta']:
                     uploaded_files[file_key] = upload_test(target_dir, file_key, DEFAULT_FILES)
 
-            # Replace Ref Sequence files with local file realpath
+            # Replace Ref Sequence with local path if example ftp detected
             if request.form['ref_fasta'] ==  'ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz':
                 uploaded_files['ref_fasta'] = DEFAULT_FILES['ref_fasta']
             else:
@@ -157,8 +156,9 @@ def submit_test():
             else:
                 uploaded_files['ref_gff'] = request.form['ref_gff']
             
-            # Use same Redis for production site and test site
-            redis_conn = Redis() # initializes a connection to the default Redis server running on localhost
+            # (4) Send job to the backend
+            # Use the redis queue as same as production site
+            redis_conn = Redis()
             q = Queue(connection=redis_conn, default_timeout=3000)
 
             job = q.enqueue(redisjob, args=(target_dir,
@@ -176,11 +176,13 @@ def submit_test():
                             result_ttl=-1,
                             job_timeout=3000
                             )
+            # (5) Update record in the database and flush message on the user front-end
             db_update(timestamp, "jobID", job.get_id())
             flash(Markup('JOB ID: ' + job.get_id() + '<br>' +
                          "You'll receive an e-mail when job is done with download link"), 'info')
     return render_template('form.html', form=form)
 
+# Route for downloading result
 @app.route('/download/<timestamp>')
 def downloadFile(timestamp):
     try:
