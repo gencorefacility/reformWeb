@@ -115,7 +115,7 @@ def upload(target_dir, file):
     # save the file
     fileObj.save(os.path.join(target_dir,
                               secure_filename(fileObj.filename)))
-# upload file function for test site
+# upload file function for test site, return by filename
 def upload_test(target_dir, file_key, default_files):
     # if file is empty (indicated use default file), fileObj set to None
     fileObj = request.files[file_key] if file_key in request.files else None
@@ -224,6 +224,32 @@ def db_submit(request, timestamp):
                  request.form['ref_gff'],
                  request.files['in_fasta'].filename,
                  request.files['in_gff'].filename)
+            )
+            con.commit()
+    except:
+        con.rollback()
+        flash("error in insert operation ", 'error')
+
+def db_test_submit(request, uploaded_files, timestamp):
+    try:
+        with sqlite3.connect("database.db") as con:
+            cur = con.cursor()
+            cur.execute(
+                'INSERT INTO submissions (jobID, timestamp, email, status, chrom, upstream_fasta, '
+                'downstream_fasta, position, ref_fasta, ref_gff, in_fasta, in_gff ) VALUES(?, ?, ?, ?, ?, ?, '
+                '?, ?, ?, ?, ?, ?)',
+                ("none",
+                 timestamp,
+                 request.form['email'],
+                 "submitted",
+                 request.form['chrom'],
+                 uploaded_files['upstream_fasta'],
+                 uploaded_files['downstream_fasta'],
+                 request.form['position'],
+                 uploaded_files['ref_fasta'],
+                 uploaded_files['ref_gff'],
+                 uploaded_files['in_fasta'],
+                 uploaded_files['in_gff'])
             )
             con.commit()
     except:

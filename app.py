@@ -157,7 +157,6 @@ def submit_test():
             if not os.path.isfile('database.db'):
                 db_create()
 
-            db_submit(request, timestamp)
 
             # (3) Upload files from user device to server
             # Verify all files are present before uploading
@@ -191,6 +190,8 @@ def submit_test():
                 uploaded_files['ref_gff'] = DEFAULT_FILES['ref_gff']
             else:
                 uploaded_files['ref_gff'] = request.form['ref_gff']
+            
+            db_test_submit(request, uploaded_files, timestamp)
             
             # Use same Redis for production site and test site
             redis_conn = Redis() # initializes a connection to the default Redis server running on localhost
