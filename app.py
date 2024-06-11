@@ -30,6 +30,26 @@ def submit():
             if not (request.files['downstream_fasta'].filename and request.files['upstream_fasta'].filename):
                 flash("Error: Must enter both upstream and downstream", 'error')
                 return redirect(url_for('submit'))
+        # Verify position is a number
+        try:
+            if request.form['position']:
+                int(request.form['position'])
+        except ValueError:
+            flash("Error: Position must be an integer, like -1, 0, 1.", 'error')
+            return redirect(url_for('submit'))
+        # Verify that the name of the uploaded file is different
+        if request.form['position'] and (request.files['in_fasta'].filename == request.files['in_gff'].filename):
+            flash("Error: ref_fasta and ref_gff must be different files", 'error')
+            return redirect(url_for('submit'))
+        elif (request.files['downstream_fasta'].filename and request.files['upstream_fasta'].filename):
+            filenames = [request.files['in_fasta'].filename, 
+                request.files['in_gff'].filename, 
+                request.files['downstream_fasta'].filename,
+                request.files['upstream_fasta'].filename]
+            if len(filenames) != len(set(filenames)):
+                flash("Error: ref_fasta, ref_gff, downstream_fasta, upstream_fasta must be different files", 'error')
+                return redirect(url_for('submit'))
+        
         if not (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and not \
                 request.form['position']:
             flash("Error: You must provide either the position, or the upstream and downstream sequences.", 'error')
@@ -103,16 +123,31 @@ def submit_test():
         if (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and request.form[
             'position']:
             flash("Error: You must provide either the position, or the upstream and downstream sequences.", 'error')
-            return redirect(url_for('submit'))
+            return redirect(url_for('submit_test'))
         if (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename):
             if not (request.files['downstream_fasta'].filename and request.files['upstream_fasta'].filename):
                 flash("Error: Must enter both upstream and downstream", 'error')
-                return redirect(url_for('submit'))
-        # # comment out the condition check, since we allowed default up/down stream fasta
-        # if not (request.files['downstream_fasta'].filename or request.files['upstream_fasta'].filename) and not \
-        #         request.form['position']:
-        #     flash("Error: You must provide either the position, or the upstream and downstream sequences.", 'error')
-        #     return redirect(url_for('submit'))
+                return redirect(url_for('submit_test'))
+        # Verify position is a number
+        try:
+            if request.form['position']:
+                int(request.form['position'])
+        except ValueError:
+            flash("Error: Position must be an integer, like -1, 0, 1.", 'error')
+            return redirect(url_for('submit_test'))
+        # Verify that the name of the uploaded file is not empty and different
+        if request.form['position'] and (request.files['in_fasta'].filename and request.files['in_gff'].filename) \
+            and (request.files['in_fasta'].filename == request.files['in_gff'].filename):
+            flash("Error: ref_fasta and ref_gff must be different files", 'error')
+            return redirect(url_for('submit_test'))
+        elif (request.files['downstream_fasta'].filename and request.files['upstream_fasta'].filename and request.files['in_fasta'].filename and request.files['in_gff'].filename):
+            filenames_test = [request.files['in_fasta'].filename,
+                request.files['in_gff'].filename,
+                request.files['downstream_fasta'].filename,
+                request.files['upstream_fasta'].filename]
+            if len(filenames_test) != len(set(filenames_test)):
+                flash("Error: ref_fasta, ref_gff, downstream_fasta, upstream_fasta must be different files", 'error')
+                return redirect(url_for('submit_test'))
         else:
             # User Submits Job #
             # (1) Create unique ID for each submission
@@ -129,7 +164,7 @@ def submit_test():
             for files in UPLOAD_FILES:
                 verified = verify_test_uploads(files)
                 if not verified:
-                    return redirect(url_for('submit'))
+                    return redirect(url_for('submit_test'))
 
             # Upload Files to UPLOAD_DIR/timestamp/ and save the name into uploaded_files or use local files
             if verified:
