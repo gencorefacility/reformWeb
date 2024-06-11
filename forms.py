@@ -4,7 +4,7 @@ from flask_wtf.file import FileRequired, FileAllowed
 
 ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
 
-
+# Use it for production site
 class SubmitJob(Form):
     email = StringField('Email Address',
                         description="When job is complete this e-mail will receive the download links",
@@ -74,7 +74,7 @@ class SubmitJob(Form):
                               InputRequired()
                           ])
 
-# form for test job
+# Use it for test site
 class Testjob(Form):
     email = StringField('Email Address',
                         description="When job is complete this e-mail will receive the download links",

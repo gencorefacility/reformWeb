@@ -75,11 +75,11 @@ def redisjob1(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fa
         print("ERROR: ")
         db_update(timestamp, "status", "failed running reform")
 
-
+# Determine if this file is accepted by checking the file extension
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+# Verify that the file is uploaded to the form and it is allowed
 def verify_uploads(file):
     fileObj = request.files[file]
 
@@ -92,10 +92,10 @@ def verify_uploads(file):
         flash('Invalid File Type for ' + file, 'error')
         return False
 
-# verify upload files for test site
+# verify_uploads() for test site
 def verify_test_uploads(file):
     fileObj = request.files[file]
-
+    # Not require user to upload files
     if fileObj.filename == '':
         # flash('No ' + file + ' file selected for uploading', 'error')
         # return False
@@ -107,7 +107,7 @@ def verify_test_uploads(file):
         return False
 
 
-
+# Upload files to uploads/timestamp 
 def upload(target_dir, file):
     fileObj = request.files[file]
     # make the directory based on timestamp
@@ -115,12 +115,14 @@ def upload(target_dir, file):
     # save the file
     fileObj.save(os.path.join(target_dir,
                               secure_filename(fileObj.filename)))
+
 # upload file function for test site, return by filename
 def upload_test(target_dir, file_key, default_files):
     # if file is empty (indicated use default file), fileObj set to None
     fileObj = request.files[file_key] if file_key in request.files else None
     os.makedirs(target_dir, exist_ok=True) # dirs for upload files
     
+    # User provided new files in form
     if fileObj:
         # save the uploaded file
         filename = secure_filename(fileObj.filename)
@@ -128,11 +130,12 @@ def upload_test(target_dir, file_key, default_files):
         fileObj.save(file_path)
         return fileObj.filename
     else:
-        # Use the default file if no file was uploaded, pass realpath
+        # Use default file if no file was uploaded
         src = os.path.abspath(default_files[file_key])
-        dst = os.path.join(target_dir, os.path.basename(src))  # link name in target_dir
-        if not os.path.exists(dst):  # Only create the symlink if it doesn't already exist
-            os.symlink(src, dst)  # Create a soft link
+        dst = os.path.join(target_dir, os.path.basename(src))
+        # Create soft link in uploads/timestamp
+        if not os.path.exists(dst):
+            os.symlink(src, dst)
         return os.path.basename(src)
 
 
@@ -174,19 +177,38 @@ def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fas
 
 
 def send_email(email, timestamp):
-    # calculate 168h DDL
+    # Set DDL to 1 week later (168hrs)
     deadline = datetime.now() + timedelta(hours=168)
     deadline_str = deadline.strftime('%B %d, %Y')
+
+    # paths to the log files
+    err_log_path = f"./downloads/{timestamp}/{timestamp}-worker-err.log"
+    out_log_path = f"./downloads/{timestamp}/{timestamp}-worker-out.log"
+
+    # read the content of the log files
+    with open(err_log_path, 'r') as file:
+        err_log_content = file.read()
+
+    with open(out_log_path, 'r') as file:
+        out_log_content = file.read()
 
     with j.app_context():
         subject = f"Reform Results - Download Deadline: {deadline_str}"
         msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
         msg.html = f"""Reform job complete. 
-                       <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>. 
-                       The file will be available for the next 7 days.
-                       The deadline to download the file is {deadline_str}. 
-                       If you do not download the file before this time, it will be deleted."""
+                    <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>. 
+                    The file will be available for the next 7 days.
+                    
+                    The deadline to download the file is {deadline_str}. 
+                    If you do not download the file before this time, it will be deleted. <br><br>
+                    <b>Reform.py Output Log:</b><br><pre>{err_log_content}</pre><br>
+                    <b>Worker Output Log:</b><br><pre>{out_log_content}</pre>
+                    """
         mail.send(msg)
+
+    # Remove the log files from the download folder
+    os.remove(err_log_path)
+    os.remove(out_log_path)
 
 
 def send_email_error(email):
