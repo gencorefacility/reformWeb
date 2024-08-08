@@ -1,6 +1,6 @@
 from wtforms import Form, StringField, FileField
 from wtforms.validators import URL, Optional, InputRequired, Email
-from flask_wtf.file import FileRequired, FileAllowed
+from flask_wtf.file import FileRequired, FileAllowed, MultipleFileField
 
 ALLOWED_EXTENSIONS = {'fa', 'gff', 'gff3', 'gtf', 'fasta', 'fna', 'tar', 'gz'}
 
@@ -28,31 +28,31 @@ class SubmitJob(Form):
                                        "of chromosome. Note: Position is 0-based",
                            validators=[Optional()])
     # OR
-    upstream_fasta = FileField('Upstream Sequence',
-                               description="FASTA file with upstream sequence.",
+    upstream_fasta = MultipleFileField('Upstream Sequence',
+                               description="FASTA files with upstream sequence.",
                                validators=[
                                    Optional()
                                ])
-    downstream_fasta = FileField('Downstream Sequence',
-                                 description="FASTA file with downstream sequence.",
+    downstream_fasta = MultipleFileField('Downstream Sequence',
+                                 description="FASTA files with downstream sequence.",
                                  validators=[
                                      Optional()
                                  ])
 
     # Uploads
-    in_fasta = FileField('Inserted Sequence (FASTA)',
-                         description="New sequence to be inserted into reference genome.",
+    in_fasta = MultipleFileField('Inserted Sequence (FASTA)',
+                         description="New sequences to be inserted into reference genome.",
                          validators=[
                              Optional(),
                              FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type'),
                              FileRequired()
                          ])
-    in_gff = FileField('Inserted Reference (gff3 or gtf)',
-                       description="GFF file describing new FASTA sequence to be inserted.",
+    in_gff = MultipleFileField('Inserted Reference (gff3 or gtf)',
+                       description="GFF files describing new FASTA sequence to be inserted.",
                        validators=[
                            Optional(),
                            FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type'),
-                           InputRequired()
+                           FileRequired()
                        ])
     # Downloads
     ref_fasta = StringField('Reference Sequence (FASTA)',
@@ -100,31 +100,31 @@ class Testjob(Form):
                                        "of chromosome. Note: Position is 0-based",
                            validators=[Optional()])
     # OR
-    upstream_fasta = FileField('Upstream Sequence',
+    upstream_fasta = MultipleFileField('Upstream Sequence',
                                description="FASTA file with upstream sequence. If no file is selected, the system will use 'test-up.fa' as a default.",
                                validators=[
                                    Optional()
                                ])
-    downstream_fasta = FileField('Downstream Sequence',
+    downstream_fasta = MultipleFileField('Downstream Sequence',
                                  description="FASTA file with downstream sequence. If no file is selected, the system will use 'test-down.fa' as a default.",
                                  validators=[
                                      Optional()
                                  ])
 
     # Uploads
-    in_fasta = FileField('Inserted Sequence (FASTA)',
+    in_fasta = MultipleFileField('Inserted Sequence (FASTA)',
                          description="Please upload the new sequence to be inserted into the reference genome. If no file is selected, the system will use 'test-in.fa' as a default.",
                          validators=[
                              Optional(),
                              FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type'),
                              # FileRequired()
                          ])
-    in_gff = FileField('Inserted Reference (gff3 or gtf)',
+    in_gff = MultipleFileField('Inserted Reference (gff3 or gtf)',
                        description="Please upload the GFF file describing the new FASTA sequence to be inserted. If no file is selected, the system will use 'test-in.gff' as a default.",
                        validators=[
                            Optional(),
                            FileAllowed([ALLOWED_EXTENSIONS], 'Invalid File Type'),
-                          # InputRequired()
+                          # FileRequired()
                        ])
     # Downloads
     ref_fasta = StringField('Reference Sequence (FASTA)',
