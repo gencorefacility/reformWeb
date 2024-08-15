@@ -115,8 +115,8 @@ def submit_test():
 
     # Path for local files
     DEFAULT_FILES = {
-        'ref_fasta': './staticData/ref/Mus_musculus.GRCm38.dna.toplevel.fa',
-        'ref_gff': './staticData/ref/Mus_musculus.GRCm38.88.gff3',
+        'ref_fasta': './staticData/ref/test-ref.fa',
+        'ref_gff': './staticData/ref/test-ref.gtf',
         'in_fasta': './staticData/inserted/test-in.fa',
         'in_gff': './staticData/inserted/test-in.gtf',
         'upstream_fasta': './staticData/up-down-seq/test-up.fa',
@@ -185,12 +185,12 @@ def submit_test():
                 for file_key in ['upstream_fasta', 'downstream_fasta']:
                     uploaded_files[file_key] = upload_test(target_dir, file_key, DEFAULT_FILES)
 
-            # Replace Ref Sequence with local path if example ftp detected
-            if request.form['ref_fasta'] ==  'ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz':
+            # Replace Ref Sequence with local path if test files detected
+            if request.form['ref_fasta'] ==  'test-ref.fa':
                 uploaded_files['ref_fasta'] = DEFAULT_FILES['ref_fasta']
             else:
                 uploaded_files['ref_fasta'] = request.form['ref_fasta']
-            if request.form['ref_gff'] ==  'ftp://ftp.ensembl.org/pub/release-88/gff3/mus_musculus/Mus_musculus.GRCm38.88.gff3.gz':
+            if request.form['ref_gff'] ==  'test-ref.gtf':
                 uploaded_files['ref_gff'] = DEFAULT_FILES['ref_gff']
             else:
                 uploaded_files['ref_gff'] = request.form['ref_gff']
