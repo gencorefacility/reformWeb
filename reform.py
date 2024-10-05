@@ -104,7 +104,7 @@ def main():
 			else:
 				new_gff_path = create_new_gff(temp_gff_name, in_arg.ref_gff, in_gff_lines, position, down_position, seq.id, len(str(record.seq)))
 		else:
-			new_gff_name = annotation_name + '_reformed' + annotation_ext
+			new_gff_name = output_dir + annotation_name + '_reformed' + annotation_ext
 			if prev_gff_path: 
 				new_gff_path = create_new_gff(new_gff_name, prev_gff_path, in_gff_lines, position, down_position, seq.id, len(str(record.seq)))
 			else:
