@@ -6,7 +6,7 @@ subscription-manager register --org="fas_biology" --activationkey="fas-bio-rh9-a
 # Initial System Setup
 dnf update -y
 subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
-dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 
 # Secure
 # Partition Mounting Weakness
