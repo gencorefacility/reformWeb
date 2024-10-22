@@ -74,7 +74,7 @@ class SubmitJob(Form):
                               InputRequired()
                           ])
 
-# Use it for test site
+# Use it for test site (test_case_1)
 class Testjob(Form):
     email = StringField('Email Address',
                         description="When job is complete this e-mail will receive the download links",
@@ -92,7 +92,7 @@ class Testjob(Form):
                         validators=[
                             InputRequired()
                         ],
-                        default = "1") # Chromosome has been set to 1 default
+                        default = "X") # Chromosome has been set to X as default
 
     # POSITION
     position = StringField('Position',
@@ -136,7 +136,7 @@ class Testjob(Form):
                                 URL(),
                                 InputRequired()
                             ],
-                            default = "ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz")
+                            default = "test-ref.fa")
     
     ref_gff = StringField('Reference Annotation (gff3 or gtf)',
                           description="URL to reference gff file. e.g. ftp://ftp.ensembl.org/pub/release-88/gff3/mus_musculus/Mus_musculus.GRCm38.88.gff3.gz",
@@ -147,4 +147,4 @@ class Testjob(Form):
                               URL(),
                               InputRequired()
                           ],
-                          default = "ftp://ftp.ensembl.org/pub/release-88/gff3/mus_musculus/Mus_musculus.GRCm38.88.gff3.gz")
+                          default = "test-ref.gtf")
