@@ -108,8 +108,8 @@ else
 fi
 
 # remove upload folder
-echo "rm -Rf ./uploads/$timestamp"
-rm -Rf ./uploads/$timestamp
+# echo "rm -Rf ./uploads/$timestamp"
+# rm -Rf ./uploads/$timestamp
 
 # create downloads directory
 echo "mkdir -p ./downloads/$timestamp"
