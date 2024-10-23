@@ -35,6 +35,9 @@ def submit():
             if not (downstream_fasta_files and upstream_fasta_files):
                 flash("Error: Must enter both upstream and downstream", 'error')
                 return redirect(url_for('submit'))
+        # Verify files are not empty
+        if not check_files_not_empty(downstream_fasta_files+upstream_fasta_files+in_fasta_files+in_gff_files):
+            return redirect(url_for('submit'))
         # Verify position is a number
         positions = None
         try:

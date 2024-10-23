@@ -44,3 +44,18 @@ class NotRequiredIf(FileRequired):
             raise Exception('no field named "%s" in form' % self.other_field_name)
         if not bool(other_field.data):
             super(NotRequiredIf, self).__call__(form, field)
+
+class FileNotEmpty(object):
+    """
+    Validates that the uploaded file is not empty.
+    """
+
+    def __init__(self, message=None):
+        if not message:
+            message = "The file should be non-empty."
+        self.message = message
+
+    def __call__(self, form, field):
+         for uploaded_file in field.data:
+            if uploaded_file.data.getbuffer().nbytes == 0:  # Check file size
+                raise Exception(uploaded_file.filename + "is empty, please check the file content")

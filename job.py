@@ -320,3 +320,11 @@ def process_position(position_str):
 # Format file path into: ./uploads/$timestamp/item
 def format_paths(file_list, target_dir):
             return [os.path.join(target_dir, filename) for filename in file_list]
+
+# Checks if any file in the list is empty.
+def check_files_not_empty(file_list):
+    for file in file_list:
+        if file.content_length == 0:
+            flash(f"Error: {file.filename} is empty, please upload a valid file.", 'error')
+            return False
+    return True
