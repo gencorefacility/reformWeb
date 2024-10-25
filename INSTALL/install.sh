@@ -136,6 +136,6 @@ mkdir -p /home/reform/reformWeb/staticData
 cd /home/reform/reformWeb/staticData
 # Create directory for reference sequences and upload Exampl Ref Sequences
 # for example: 
-mkdir ref & mkdir inserted & mkdir up-down-seq
+mkdir ref inserted up-down-seq
 # Please upload files to inserted and up-down-seq folders, and relevent test cases
 # can be found in https://github.com/gencorefacility/reform/tree/master/test_data
