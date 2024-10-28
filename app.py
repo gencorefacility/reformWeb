@@ -141,12 +141,12 @@ def submit_test():
 
     # Path for local files
     DEFAULT_FILES = {
-        'ref_fasta': './staticData/ref/Mus_musculus.GRCm38.dna.toplevel.fa',
-        'ref_gff': './staticData/ref/Mus_musculus.GRCm38.88.gff3',
-        'in_fasta': ['./staticData/inserted/test-in.fa'],
-        'in_gff': ['./staticData/inserted/test-in.gtf'],
-        'upstream_fasta': ['./staticData/up-down-seq/test-up.fa'],
-        'downstream_fasta': ['./staticData/up-down-seq/test-down.fa']
+        'ref_fasta': './staticData/ref/test-ref.fa',
+        'ref_gff': './staticData/ref/test-ref.gtf',
+        'in_fasta': './staticData/inserted/test-in.fa',
+        'in_gff': './staticData/inserted/test-in.gtf',
+        'upstream_fasta': './staticData/up-down-seq/test-up.fa',
+        'downstream_fasta': './staticData/up-down-seq/test-down.fa'
     }
     # Validate user input based on test site rule
     form = Testjob(request.form)
@@ -233,14 +233,13 @@ def submit_test():
             if not request.form['position']:
                 for file_key in ['upstream_fasta', 'downstream_fasta']:
                     UPLOAD_FILES[file_key] = format_paths(upload_test(target_dir, file_key, DEFAULT_FILES), target_dir)
-
-            # Replace Ref Sequence with local path if example ftp detected
-            if request.form['ref_fasta'] ==  'ftp://ftp.ensembl.org/pub/release-88/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz':
-                UPLOAD_FILES['ref_fasta'] = DEFAULT_FILES['ref_fasta']
+            # Replace Ref Sequence with local path if test files detected
+            if request.form['ref_fasta'] ==  'test-ref.fa':
+                uploaded_files['ref_fasta'] = DEFAULT_FILES['ref_fasta']
             else:
-                UPLOAD_FILES['ref_fasta'] = request.form['ref_fasta']
-            if request.form['ref_gff'] ==  'ftp://ftp.ensembl.org/pub/release-88/gff3/mus_musculus/Mus_musculus.GRCm38.88.gff3.gz':
-                UPLOAD_FILES['ref_gff'] = DEFAULT_FILES['ref_gff']
+                uploaded_files['ref_fasta'] = request.form['ref_fasta']
+            if request.form['ref_gff'] ==  'test-ref.gtf':
+                uploaded_files['ref_gff'] = DEFAULT_FILES['ref_gff']
             else:
                 UPLOAD_FILES['ref_gff'] = request.form['ref_gff']
             
