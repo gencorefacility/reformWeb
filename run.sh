@@ -88,20 +88,20 @@ fi
 # ./uploads/$timestamp/
 
 if [ ! -z "$position" ]; then
-  echo   ~/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta $in_fasta \
+  echo   $HOME/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta $in_fasta \
   --in_gff $in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
   --output_dir "./results/$timestamp/"
 
-   ~/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta $in_fasta \
+   $HOME/venv/bin/python reform.py --chrom $chrom --position $position --in_fasta $in_fasta \
   --in_gff $in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
   --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log
 else
-  echo    ~/venv/bin/python reform.py --chrom $chrom --upstream_fasta $upstream_fasta \
+  echo    $HOME/venv/bin/python reform.py --chrom $chrom --upstream_fasta $upstream_fasta \
   --downstream_fasta $downstream_fasta --in_fasta $in_fasta \
   --in_gff $in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
   --output_dir "./results/$timestamp/"
 
-   ~/venv/bin/python reform.py --chrom $chrom --upstream_fasta $upstream_fasta \
+   $HOME/venv/bin/python reform.py --chrom $chrom --upstream_fasta $upstream_fasta \
   --downstream_fasta $downstream_fasta --in_fasta $in_fasta \
   --in_gff $in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
   --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log

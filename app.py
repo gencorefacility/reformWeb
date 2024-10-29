@@ -96,7 +96,7 @@ def submit():
                 if not verified:
                     return redirect(url_for('submit'))
 
-            # Upload Files to UPLOAD_DIR/timestamp/, and convert format to./uploads/$timestamp/item
+            # Upload Files to UPLOAD_DIR/timestamp/
             if verified:
                 for key in UPLOAD_FILES.keys():
                     UPLOAD_FILES[key] = format_paths(upload(target_dir, key), target_dir)
@@ -172,8 +172,7 @@ def submit_test():
         except ValueError as e:
             flash(str(e), 'error')
             return redirect(url_for('submit'))
-        # Verify that the name of the uploaded file is different when user upload (filename is not empty )
-        # Verify that the name of the uploaded file is different by set()
+        # Ensure the uploaded file names are unique and not empty using set()
         if in_fasta_files and in_gff_files:
             all_in_filenames = []
             in_fasta_filenames = [file.filename for file in in_fasta_files]
