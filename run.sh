@@ -107,9 +107,13 @@ else
   --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log
 fi
 
-# remove upload folder
-# echo "rm -Rf ./uploads/$timestamp"
-# rm -Rf ./uploads/$timestamp
+# Check reform.py exit status and remove upload folder if successful
+if [ $? -eq 0 ]; then
+  echo "rm -Rf ./uploads/$timestamp"
+  rm -Rf ./uploads/$timestamp
+else
+  echo "reform.py encountered an error, retaining upload folder for debugging."
+fi
 
 # create downloads directory
 echo "mkdir -p ./downloads/$timestamp"
