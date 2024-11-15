@@ -84,6 +84,20 @@ else
     ref_gff_path="$ref_gff"
 fi
 
+# Validate all fasta files in uploads folder
+uploads_dir="./uploads/$timestamp"
+echo "Validating fasta files in $uploads_dir"
+for fasta_file in "$uploads_dir"/*.fasta; do
+    if [[ -f "$fasta_file" ]]; then
+        echo "Validating $fasta_file"
+        python3 ../fasta_validate.py "$fasta_file"
+        if [[ $? -ne 0 ]]; then
+            echo "Validation failed for $fasta_file"
+            exit 1
+        fi
+    fi
+done
+
 # Run reform.py
 
 if [ ! -z "$position" ]; then
