@@ -14,12 +14,12 @@ app = Flask(__name__)
 app.secret_key = 'development key'
 
 UPLOAD_FOLDER = './uploads'
-# The type of file that needs to be uploaded to the server by user.
-UPLOAD_FILES = {'in_fasta': None, 'in_gff': None}
 
 # Route for submitting data on the production site.
 @app.route('/', methods=['GET', 'POST'])
 def submit():
+    # The type of file that needs to be uploaded to the server by user.
+    UPLOAD_FILES = {'in_fasta': None, 'in_gff': None}
     form = SubmitJob(request.form)
     # Validate user input according to the validation rules defined in forms.py.
     if request.method == 'POST' and form.validate():
@@ -138,7 +138,8 @@ def submit():
 # Route for submitting data on the test site
 @app.route('/test', methods=['GET', 'POST'])
 def submit_test():
-
+    # The type of file that needs to be uploaded to the server by user.
+    UPLOAD_FILES = {'in_fasta': None, 'in_gff': None}
     # Path for local files
     DEFAULT_FILES = {
         'ref_fasta': './staticData/ref/test-ref.fa',
