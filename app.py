@@ -205,7 +205,7 @@ def submit_test():
 
             job = q.enqueue(redisjob, args=(target_dir,
                                             timestamp,
-                                            request.form['email'], # ys4680@nyu.edu
+                                            request.form['email'], 
                                             request.form['chrom'], # 1
                                             uploaded_files['upstream_fasta'], # by default
                                             uploaded_files['downstream_fasta'],
