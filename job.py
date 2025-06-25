@@ -195,16 +195,16 @@ def send_email(email, timestamp):
     with j.app_context():
         subject = f"Reform Results - Download Deadline: {deadline_str}"
         msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
-        msg.html = f"""Reform job complete. 
+        msg.html = f"""<i>ref</i>orm job complete. 
                     <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>. 
                     The file will be available for the next 7 days until {deadline_str}. If you do not download the file before this time, it will be deleted. <br><br>
 
-                    If you use reform in your research, please cite the GitHub repository:<br>
+                    If you use <i>ref</i>orm in your research, please cite the GitHub repository:<br>
                     reform: https://github.com/gencorefacility/reform<br><br>
                     
                     You may also cite our article:<br>
                     Mohammed Khalfan, Eric Borenstein, Pieter Spealman, Farah Abdul-Rahman, and David Gresham (2021).<br>
-                    <i>Modifying Reference Sequence and Annotation Files Quickly and Reproducibly with reform.</i><br>
+                    <i>Modifying Reference Sequence and Annotation Files Quickly and Reproducibly with reform.</i><br><br>
                     
                     <b>Reform.py Output Log:</b><br><pre>{err_log_content}</pre><br>
                     <b>Worker Output Log:</b><br><pre>{out_log_content}</pre>
@@ -219,7 +219,10 @@ def send_email(email, timestamp):
 def send_email_error(email):
     with j.app_context():
         msg = Message('reform results - error', sender='reform@nyu.edu', recipients=[email])
-        msg.html = "reform job had an error. Please resubmit."
+        msg.html = f""""<i>ref</i>orm job had an error. Please review and resubmit. <br><br>
+                    <b>Reform.py Output Log:</b><br><pre>{err_log_content}</pre><br>
+                    <b>Worker Output Log:</b><br><pre>{out_log_content}</pre>
+                    """
         mail.send(msg)
 
 
