@@ -133,7 +133,7 @@ class Testjob(Form):
                                 "placeholder": "Enter Reference URL",
                             },
                             validators=[
-                                URL(),
+                                #URL(),
                                 InputRequired()
                             ],
                             default = "test-ref.fa")
@@ -144,7 +144,7 @@ class Testjob(Form):
                               "placeholder": "Enter Reference URL",
                           },
                           validators=[
-                              URL(),
+                              #URL(),
                               InputRequired()
                           ],
                           default = "test-ref.gtf")
