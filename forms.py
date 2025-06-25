@@ -85,7 +85,7 @@ class Testjob(Form):
                             InputRequired(),
                             Email()
                         ],
-                        default="ys4680@nyu.edu") # hard code email
+                        default="@nyu.edu") # hard code email
 
     chrom = StringField('Chromosome',
                         description="ID of the chromosome to modify. Must match ID in FASTA file.",
