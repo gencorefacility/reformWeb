@@ -23,15 +23,21 @@ mail = Mail(j)
 
 def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
              in_fasta, in_gff):
+    # Convert list of insert sequences to string
+    in_fasta_str  = ','.join(in_fasta)
+    in_gff_str = ','.join(in_gff)
     if position:
+
         command = "bash ./run.sh {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
-                                                                    ref_fastaURL, ref_gffURL, in_fasta,
-                                                                    in_gff, position)
+                                                                    ref_fastaURL, ref_gffURL, in_fasta_str,
+                                                                    in_gff_str, position)
     else:
+        upstream_fasta_str  = ','.join(upstream_fasta)
+        downstream_fasta_str  = ','.join(downstream_fasta)
         command = "bash ./run.sh {} {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
-                                                                       ref_fastaURL, ref_gffURL, in_fasta,
-                                                                       in_gff, upstream_fasta,
-                                                                       downstream_fasta)
+                                                                       ref_fastaURL, ref_gffURL, in_fasta_str,
+                                                                       in_gff_str, upstream_fasta_str,
+                                                                       downstream_fasta_str)
     try:
         #subprocess.run([command])
         os.system(command)
@@ -81,62 +87,75 @@ def allowed_file(filename):
 
 # Verify that the file is uploaded to the form and it is allowed
 def verify_uploads(file):
-    fileObj = request.files[file]
-
-    if fileObj.filename == '':
-        flash('No ' + file + ' file selected for uploading', 'error')
-        return False
-    if fileObj and allowed_file(fileObj.filename):
-        return True
-    else:
-        flash('Invalid File Type for ' + file, 'error')
-        return False
+    fileObj_lists = request.files.getlist(file)
+    for uploaded_file in fileObj_lists:
+        if uploaded_file.filename == '':
+            flash('No ' + file + ' file selected for uploading', 'error')
+            return False
+        if uploaded_file and allowed_file(uploaded_file.filename):
+            continue
+        else:
+            flash('Invalid File Type for ' + file, 'error')
+            return False
+    return True
 
 # verify_uploads() for test site
 def verify_test_uploads(file):
-    fileObj = request.files[file]
-    # Not require user to upload files
-    if fileObj.filename == '':
-        # flash('No ' + file + ' file selected for uploading', 'error')
-        # return False
-        return True # If no file is uploaded then the default file is used
-    if fileObj and allowed_file(fileObj.filename):
-        return True
-    else:
-        flash('Invalid File Type for ' + file, 'error')
-        return False
+    fileObj_lists = request.files.getlist(file)
+    for uploaded_file in fileObj_lists:
+        # Not require user to upload files
+        if uploaded_file.filename == '':
+            # flash('No ' + file + ' file selected for uploading', 'error')
+            # return False
+            continue # If no file is uploaded then the default file is used
+        if uploaded_file and allowed_file(uploaded_file.filename):
+            continue
+        else:
+            flash('Invalid File Type for ' + file, 'error')
+            return False
+    return True
 
 
 # Upload files to uploads/timestamp 
 def upload(target_dir, file):
-    fileObj = request.files[file]
+    fileObj_lists = request.files.getlist(file)
     # make the directory based on timestamp
     os.system('mkdir -p ' + target_dir)
     # save the file
-    fileObj.save(os.path.join(target_dir,
-                              secure_filename(fileObj.filename)))
+    filenames = []
+    for fileObj in fileObj_lists:
+        filename = secure_filename(fileObj.filename)
+        fileObj.save(os.path.join(target_dir, filename))
+        filenames.append(filename)
+    return filenames
 
 # upload file function for test site, return by filename
 def upload_test(target_dir, file_key, default_files):
     # if file is empty (indicated use default file), fileObj set to None
-    fileObj = request.files[file_key] if file_key in request.files else None
+    fileObj_lists = request.files.getlist(file_key) if file_key in request.files else []
     os.makedirs(target_dir, exist_ok=True) # dirs for upload files
     
     # User provided new files in form
-    if fileObj:
-        # save the uploaded file
-        filename = secure_filename(fileObj.filename)
-        file_path = os.path.join(target_dir, filename)
-        fileObj.save(file_path)
-        return fileObj.filename
+    filenames = []
+    if fileObj_lists:
+        for fileObj in fileObj_lists:
+            # save the uploaded file
+            filename = secure_filename(fileObj.filename)
+            file_path = os.path.join(target_dir, filename)
+            fileObj.save(file_path)
+            filenames.append(fileObj.filename)
     else:
-        # Use default file if no file was uploaded
-        src = os.path.abspath(default_files[file_key])
-        dst = os.path.join(target_dir, os.path.basename(src))
-        # Create soft link in uploads/timestamp
-        if not os.path.exists(dst):
-            os.symlink(src, dst)
-        return os.path.basename(src)
+        # default_files is a list of file names
+        src_files = default_files[file_key]
+        for src in src_files:
+            # Use default file if no file was uploaded
+            src = os.path.abspath(default_files[file_key])
+            dst = os.path.join(target_dir, os.path.basename(src))
+            # Create soft link in uploads/timestamp
+            if not os.path.exists(dst):
+                os.symlink(src, dst)
+            filenames.append(os.path.basename(src))
+    return filenames
 
 
 def download(target_dir, URL):
@@ -289,3 +308,20 @@ def db_update(timestamp, set_id, set_value):
     db.execute("UPDATE submissions SET " + set_id + "=? where timestamp=? ", (set_value, timestamp))
     db.commit()
     db.close()
+
+def process_position(position_str):
+    try:
+        position = int(position_str)
+        return position_str  # return Str
+    except ValueError:
+        try:
+            position_list = [pos.strip() for pos in position_str.split(',')]
+            for pos in position_list:
+                int(pos)
+            return position_str
+        except ValueError:
+            raise ValueError("Position must be an integer or a comma-separated list of integers.")
+
+# Format file path into: ./uploads/$timestamp/item
+def format_paths(file_list, target_dir):
+            return [os.path.join(target_dir, filename) for filename in file_list]
