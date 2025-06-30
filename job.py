@@ -197,7 +197,7 @@ def send_email(email, timestamp):
         msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
         msg.html = f"""<i>ref</i>orm job complete. 
                     <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>. 
-                    The file will be available for the next 7 days until {deadline_str}. If you do not download the file before this time, it will be deleted. <br><br>
+                    The file will be available for the next 7 days until {deadline_str}.<br><br>
 
                     If you use <i>ref</i>orm in your research, please cite the GitHub repository:<br>
                     reform: https://github.com/gencorefacility/reform<br><br>
