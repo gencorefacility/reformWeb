@@ -85,8 +85,25 @@ def submit():
 
             # (4) Send the job to the backend
             # Connect to the Redis server and intial a queue
-            redis_conn = Redis()
-            q = Queue(connection=redis_conn, default_timeout=3000)
+            redis_conn = Redis() # This will connect to localhost:6379, db 0 by default
+
+            # Determine the environment based on the REFORM_ENV environment variable
+            reform_env = os.environ.get("REFORM_ENV")
+
+            if reform_env == "development":
+                queue_name = "dev_queue"
+            elif reform_env == "production":
+                queue_name = "prod_queue"
+            else:
+                # Fallback for safety, though it should ideally be set by Supervisor
+                print(f"WARNING: REFORM_ENV not set or unknown value: {reform_env}. Defaulting to 'default' queue.")
+                queue_name = "default"
+
+            # Initialize the Queue with the determined queue_name
+            q = Queue(queue_name, connection=redis_conn, default_timeout=3000)
+            # Connect to the Redis server and intial a queue
+            #redis_conn = Redis()
+            #q = Queue(connection=redis_conn, default_timeout=3000)
 
             # Push job function and parameters into RQ
             job = q.enqueue(redisjob, args=(target_dir,
@@ -199,9 +216,25 @@ def submit_test():
             
             # (4) Send job to the backend
             # Use the redis queue as same as production site
-            redis_conn = Redis()
+            redis_conn = Redis() # This will connect to localhost:6379, db 0 by default
+
+            # Determine the environment based on the REFORM_ENV environment variable
+            reform_env = os.environ.get("REFORM_ENV")
+
+            if reform_env == "development":
+                queue_name = "dev_queue"
+            elif reform_env == "production":
+                queue_name = "prod_queue"
+            else:
+                # Fallback for safety, though it should ideally be set by Supervisor
+                print(f"WARNING: REFORM_ENV not set or unknown value: {reform_env}. Defaulting to 'default' queue.")
+                queue_name = "default"
+
+            # Initialize the Queue with the determined queue_name
+            q = Queue(queue_name, connection=redis_conn, default_timeout=3000)
+            #redis_conn = Redis()
           
-            q = Queue(connection=redis_conn, default_timeout=3000)
+            #q = Queue(connection=redis_conn, default_timeout=3000)
 
             job = q.enqueue(redisjob, args=(target_dir,
                                             timestamp,
