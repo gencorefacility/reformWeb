@@ -23,12 +23,14 @@ mail = Mail(j)
 
 def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
              in_fasta, in_gff):
+    python_exec_path = os.path.expanduser("~/venv/bin/python")
+
     if position:
-        command = "bash ./run.sh {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
+        command = "bash ./run.sh {} {} {} {} {} {} {} {} {} {}".format(python_exec_path, target_dir, timestamp, email, chrom,
                                                                     ref_fastaURL, ref_gffURL, in_fasta,
                                                                     in_gff, position)
     else:
-        command = "bash ./run.sh {} {} {} {} {} {} {} {} {} {}".format(target_dir, timestamp, email, chrom,
+        command = "bash ./run.sh {} {} {} {} {} {} {} {} {} {} {}".format(python_exec_path, target_dir, timestamp, email, chrom,
                                                                        ref_fastaURL, ref_gffURL, in_fasta,
                                                                        in_gff, upstream_fasta,
                                                                        downstream_fasta)
