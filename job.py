@@ -20,7 +20,6 @@ j.config['MAIL_USE_TLS'] = False
 j.config['MAIL_USE_SSL'] = False
 mail = Mail(j)
 
-
 def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
              in_fasta, in_gff):
     python_exec_path = os.path.expanduser("~/venv/bin/python")
@@ -35,7 +34,6 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
                                                                        in_gff, upstream_fasta,
                                                                        downstream_fasta)
     try:
-        #subprocess.run([command])
         os.system(command)
         os.system("echo Emailing")
         send_email(email, timestamp)
@@ -44,38 +42,6 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
     except:
         os.system("echo Command Failed")
         send_email_error(email)
-
-
-
-
-def redisjob1(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fasta, position, ref_fastaURL, ref_gffURL,
-              in_fasta, in_gff):
-    # (4) Download files from user provided URLs to server
-    try:
-        ref_fasta = download(target_dir, ref_fastaURL)
-        ref_gff = download(target_dir, ref_gffURL)
-    except:
-        # TODO: e-mal of failure
-        print("ERROR: ")
-        db_update(timestamp, "status", "failed to download references")
-
-    # Are the downloads compressed (gzip)
-    if "gz" in ref_fasta:
-        os.system("gunzip " + ref_fasta)
-        ref_fasta = ref_fasta[0:-3]
-    if "gz" in ref_gff:
-        os.system("gunzip " + ref_gff)
-        ref_gff = ref_gff[0:-3]
-
-    # (5) Run the reform.py
-    try:
-        runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fasta, in_gff, upstream_fasta,
-                  downstream_fasta)
-        send_email(email, timestamp)
-        db_update(timestamp, "status", "complete")
-    except:
-        print("ERROR: ")
-        db_update(timestamp, "status", "failed running reform")
 
 # Determine if this file is accepted by checking the file extension
 def allowed_file(filename):
@@ -144,39 +110,6 @@ def upload_test(target_dir, file_key, default_files):
 def download(target_dir, URL):
     if URL:
         return wget.download(URL, target_dir)
-
-
-def runReform(target_dir, ref_fasta, ref_gff, timestamp, position, chrom, in_fasta, in_gff, upstream_fasta,
-              downstream_fasta):
-    if position:
-        command = 'python reform.py --chrom {} --position {} --in_fasta {} --in_gff {} --ref_fasta {} --ref_gff {} ' \
-                  '--output_dir {}'.format(chrom,
-                                           position,
-                                           os.path.join(target_dir, secure_filename(in_fasta)),
-                                           os.path.join(target_dir, secure_filename(in_gff)),
-                                           ref_fasta,
-                                           ref_gff,
-                                           "./results/" + timestamp + "/"
-                                           )
-    else:
-        command = 'python reform.py --chrom {} --upstream_fasta {} --downstream_fasta {} --in_fasta {} --in_gff {} ' \
-                  '--ref_fasta {} --ref_gff {} --output_dir {}'.format(chrom,
-                                                                       os.path.join(target_dir,
-                                                                                    secure_filename(upstream_fasta)),
-                                                                       os.path.join(target_dir,
-                                                                                    secure_filename(downstream_fasta)),
-                                                                       os.path.join(target_dir,
-                                                                                    secure_filename(in_fasta)),
-                                                                       os.path.join(target_dir,
-                                                                                    secure_filename(in_gff)),
-                                                                       ref_fasta,
-                                                                       ref_gff,
-                                                                       "./results/" + timestamp + "/"
-                                                                       )
-    os.system("mkdir -p results/" + timestamp)
-    os.system(command)
-    os.system('tar -czf results/' + timestamp + '/' + timestamp + '.tar.gz -C results/' + timestamp + '/ .')
-
 
 def send_email(email, timestamp):
     # Set DDL to 1 week later (168hrs)
