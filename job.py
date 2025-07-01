@@ -25,23 +25,38 @@ def redisjob(target_dir, timestamp, email, chrom, upstream_fasta, downstream_fas
     python_exec_path = os.path.expanduser("~/venv/bin/python")
 
     if position:
-        command = "bash ./run.sh {} {} {} {} {} {} {} {} {} {}".format(python_exec_path, target_dir, timestamp, email, chrom,
-                                                                    ref_fastaURL, ref_gffURL, in_fasta,
-                                                                    in_gff, position)
+        command_list = ["bash", "./run.sh", python_exec_path, target_dir, timestamp, email, chrom,
+                        ref_fastaURL, ref_gffURL, in_fasta, in_gff, position]
     else:
-        command = "bash ./run.sh {} {} {} {} {} {} {} {} {} {} {}".format(python_exec_path, target_dir, timestamp, email, chrom,
-                                                                       ref_fastaURL, ref_gffURL, in_fasta,
-                                                                       in_gff, upstream_fasta,
-                                                                       downstream_fasta)
+        command_list = ["bash", "./run.sh", python_exec_path, target_dir, timestamp, email, chrom,
+                        ref_fastaURL, ref_gffURL, in_fasta, in_gff, upstream_fasta, downstream_fasta]
+
+    status=1
     try:
-        os.system(command)
-        os.system("echo Emailing")
-        send_email(email, timestamp)
-        os.system("echo Emailed")
+        # Using subprocess.run with check=True to raise an exception on non-zero exit codes
+        # You might want to capture stdout/stderr for debugging:
+        result = subprocess.run(command_list, check=True, capture_output=True, text=True)
+        print("Command output:", result.stdout)
+        print("Command error:", result.stderr)
+        #subprocess.run(command_list, check=True) # This will raise CalledProcessError if run.sh fails
+
+#        os.system("echo Emailing") # Consider replacing os.system with subprocess.run here too
+ #       send_email(email, timestamp)
+ #       os.system("echo Emailed")
+        status=0
         db_update(timestamp, "status", "complete")
-    except:
-        os.system("echo Command Failed")
-        send_email_error(email)
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with exit code {e.returncode}")
+        print(f"Error executing command: {e}") # Print the error for debugging
+        db_update(timestamp, "status", "failed")
+    except Exception as e: # Catch other potential exceptions during execution
+        os.system("echo An unexpected error occurred")
+        print(f"Unexpected error: {e}")
+        db_update(timestamp, "status", "failed")
+
+    os.system("echo Emailing") # Consider replacing os.system with subprocess.run here too
+    send_email(email, timestamp, status)
+    os.system("echo Emailed")
 
 # Determine if this file is accepted by checking the file extension
 def allowed_file(filename):
@@ -111,55 +126,82 @@ def download(target_dir, URL):
     if URL:
         return wget.download(URL, target_dir)
 
-def send_email(email, timestamp):
-    # Set DDL to 1 week later (168hrs)
+def send_email(email, timestamp, status):
+    # Set DDL to 1 week later (168hrs) - only relevant for success email
     deadline = datetime.now() + timedelta(hours=168)
     deadline_str = deadline.strftime('%B %d, %Y')
 
-    # paths to the log files
     err_log_path = f"./downloads/{timestamp}/{timestamp}-worker-err.log"
-    out_log_path = f"./downloads/{timestamp}/{timestamp}-worker-out.log"
+    out_log_path = f"./results/{timestamp}/{timestamp}-worker-out.log" # Assuming a worker-out.log is also generated
 
-    # read the content of the log files
-    with open(err_log_path, 'r') as file:
-        err_log_content = file.read()
+    err_log_content = "No error log content available."
+    out_log_content = "No output log content available."
 
-    with open(out_log_path, 'r') as file:
-        out_log_content = file.read()
-
-    with j.app_context():
-        subject = f"Reform Results - Download Deadline: {deadline_str}"
-        msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
-        msg.html = f"""<i>ref</i>orm job complete. 
-                    <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>. 
-                    The file will be available for the next 7 days until {deadline_str}.<br><br>
-
-                    If you use <i>ref</i>orm in your research, please cite the GitHub repository:<br>
-                    reform: https://github.com/gencorefacility/reform<br><br>
-                    
-                    You may also cite our article:<br>
-                    Mohammed Khalfan, Eric Borenstein, Pieter Spealman, Farah Abdul-Rahman, and David Gresham (2021).<br>
-                    <i>Modifying Reference Sequence and Annotation Files Quickly and Reproducibly with reform.</i><br><br>
-                    
-                    <b>Reform.py Output Log:</b><br><pre>{err_log_content}</pre><br>
-                    <b>Worker Output Log:</b><br><pre>{out_log_content}</pre>
-                    """
-        mail.send(msg)
-
-    # Remove the log files from the download folder
-    os.remove(err_log_path)
-    os.remove(out_log_path)
+    # Read the content of the log files (safely)
+    if os.path.exists(err_log_path):
+        try:
+            with open(err_log_path, 'r') as file:
+                err_log_content = file.read()
+        except Exception as e:
+            err_log_content = f"Could not read error log file: {e}"
+    else:
+        err_log_content = f"Error log file not found at: {err_log_path}"
 
 
-def send_email_error(email):
-    with j.app_context():
-        msg = Message('reform results - error', sender='reform@nyu.edu', recipients=[email])
-        msg.html = f""""<i>ref</i>orm job had an error. Please review and resubmit. <br><br>
-                    <b>Reform.py Output Log:</b><br><pre>{err_log_content}</pre><br>
-                    <b>Worker Output Log:</b><br><pre>{out_log_content}</pre>
-                    """
-        mail.send(msg)
+    if os.path.exists(out_log_path):
+        try:
+            with open(out_log_path, 'r') as file:
+                out_log_content = file.read()
+        except Exception as e:
+            out_log_content = f"Could not read output log file: {e}"
+    else:
+        out_log_content = f"Output log file not found at: {out_log_path}"
 
+
+    with j.app_context(): # Ensure this context is available where send_email is called
+        if status == 0:
+            # Success Email
+            subject = f"Reform Results - Download Deadline: {deadline_str}"
+            msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
+            msg.html = f"""<i>ref</i>orm job complete.
+                            <a href='https://reform.bio.nyu.edu/download/{timestamp}'>Click here to download results</a>.
+                            The file will be available for the next 7 days until {deadline_str}.<br><br>
+
+                            If you use <i>ref</i>orm in your research, please cite the GitHub repository:<br>
+                            https://github.com/gencorefacility/reform<br><br>
+
+                            <b>Reform Output:</b><br><pre>{err_log_content}</pre><br>
+                            """
+        else:
+            # Error Email
+            subject = 'Reform Results - ERROR'
+            msg = Message(subject, sender='reform@nyu.edu', recipients=[email])
+            msg.html = f"""<i>ref</i>orm job had an error. Please review and resubmit. <br><br>
+                            <b>Output:</b><br><pre>{out_log_content}</pre>
+                            """
+        try:
+            j.extensions['mail'].send(msg) # Correct way to access Flask-Mail instance
+            print(f"Email sent successfully for job {timestamp} (Status: {status}) to {email}")
+        except Exception as mail_e:
+            print(f"Failed to send email for job {timestamp} (Status: {status}) to {email}: {mail_e}")
+
+
+    # Remove the log files - this should happen regardless of email status
+    # Be careful with os.remove if the files are critical for debugging or auditing.
+    # It might be better to move them to an archive folder or clean up later.
+    if os.path.exists(err_log_path):
+        try:
+            os.remove(err_log_path)
+            print(f"Removed {err_log_path}")
+        except Exception as e:
+            print(f"Error removing {err_log_path}: {e}")
+
+    if os.path.exists(out_log_path):
+        try:
+            os.remove(out_log_path)
+            print(f"Removed {out_log_path}")
+        except Exception as e:
+            print(f"Error removing {out_log_path}: {e}")
 
 def db_create():
     db = sqlite3.connect('database.db')

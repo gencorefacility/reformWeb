@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 PYTHON_EXEC_PATH="$1"
 shift
 
@@ -96,7 +98,7 @@ if [ ! -z "$position" ]; then
 
   $PYTHON_EXEC_PATH reform.py --chrom $chrom --position $position --in_fasta ./uploads/$timestamp/$in_fasta \
   --in_gff ./uploads/$timestamp/$in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
-  --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log
+  --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log || exit 1
 else
   echo $PYTHON_EXEC_PATH reform.py --chrom $chrom --upstream_fasta ./uploads/$timestamp/$upstream_fasta \
   --downstream_fasta ./uploads/$timestamp/$downstream_fasta --in_fasta ./uploads/$timestamp/$in_fasta \
@@ -106,7 +108,7 @@ else
   $PYTHON_EXEC_PATH reform.py --chrom $chrom --upstream_fasta ./uploads/$timestamp/$upstream_fasta \
   --downstream_fasta ./uploads/$timestamp/$downstream_fasta --in_fasta ./uploads/$timestamp/$in_fasta \
   --in_gff ./uploads/$timestamp/$in_gff --ref_fasta "$ref_fasta_path" --ref_gff "$ref_gff_path" \
-  --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log
+  --output_dir "./results/$timestamp/" 2>&1 | tee ./results/$timestamp/$timestamp-worker-err.log || exit 1
 fi
 
 # remove upload folder
